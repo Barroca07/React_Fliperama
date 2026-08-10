@@ -1,161 +1,389 @@
+/* ===== Variáveis Globais ===== */
 :root {
-  --bg-color: #0d0d0d; /* Fundo bem escuro para o neon destacar */
+  --bg-color: #0a0a0f;
+  --surface-color: #14141f;
   --text-color: #ffffff;
-  --x-color: #ff0055;  /* Rosa Neon */
-  --o-color: #00f2ff;  /* Azul Neon */
-  --neon-border: #bc13fe; /* Roxo Neon para o tabuleiro */
+  --x-color: #ff0055;
+  --o-color: #00f2ff;
+  --neon-border: #bc13fe;
+  --neon-glow: rgba(188, 19, 254, 0.4);
+  --draw-color: #ffcc00;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
   background-color: var(--bg-color);
+  background-image: 
+    radial-gradient(ellipse at 20% 50%, rgba(188, 19, 254, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(0, 242, 255, 0.06) 0%, transparent 50%);
   color: var(--text-color);
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  margin: 0;
+  overflow: hidden;
 }
 
+/* ===== Container Principal ===== */
 .game {
-  background: #1a1a1a;
-  padding: 40px;
-  border-radius: 15px;
-  /* Borda neon no container principal */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--surface-color);
+  padding: 36px 40px;
+  border-radius: 24px;
   border: 2px solid var(--neon-border);
-  box-shadow: 0 0 10px var(--neon-border), 
-              inset 0 0 5px var(--neon-border);
+  box-shadow: 
+    0 0 20px var(--neon-glow),
+    0 0 60px rgba(188, 19, 254, 0.15),
+    inset 0 0 30px rgba(188, 19, 254, 0.05);
+  max-width: 420px;
+  width: 90vw;
+  animation: fadeInUp 0.6s ease-out;
 }
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== Tela de Seleção de Modo ===== */
+.mode-select {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.mode-select h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  background: linear-gradient(135deg, var(--x-color), var(--neon-border), var(--o-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.mode-select p {
+  color: #888;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.mode-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1.5px solid #333;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  text-align: left;
+  font-family: 'Outfit', sans-serif;
+}
+
+.mode-btn:hover {
+  border-color: var(--neon-border);
+  background: rgba(188, 19, 254, 0.08);
+  box-shadow: 0 0 20px var(--neon-glow);
+  transform: translateY(-2px);
+}
+
+.mode-btn .mode-icon {
+  font-size: 2rem;
+  min-width: 44px;
+  text-align: center;
+}
+
+.mode-btn .mode-text strong {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.mode-btn .mode-text span {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+/* ===== Placar ===== */
+.scoreboard {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+.score-item {
+  flex: 1;
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid #2a2a3a;
+  transition: all 0.3s ease;
+}
+
+.score-item.x-score {
+  border-color: rgba(255, 0, 85, 0.3);
+}
+
+.score-item.o-score {
+  border-color: rgba(0, 242, 255, 0.3);
+}
+
+.score-item.draw-score {
+  border-color: rgba(255, 204, 0, 0.3);
+}
+
+.score-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.score-item.x-score .score-label {
+  color: var(--x-color);
+  text-shadow: 0 0 8px var(--x-color);
+}
+
+.score-item.o-score .score-label {
+  color: var(--o-color);
+  text-shadow: 0 0 8px var(--o-color);
+}
+
+.score-item.draw-score .score-label {
+  color: var(--draw-color);
+  text-shadow: 0 0 8px var(--draw-color);
+}
+
+.score-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  display: block;
+}
+
+.score-item.x-score .score-value {
+  color: var(--x-color);
+}
+
+.score-item.o-score .score-value {
+  color: var(--o-color);
+}
+
+.score-item.draw-score .score-value {
+  color: var(--draw-color);
+}
+
+/* ===== Status do Jogo ===== */
 .status {
   text-align: center;
-  font-size: 1.8rem;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status.winner {
+  animation: pulseGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% { text-shadow: 0 0 10px #fff, 0 0 20px var(--neon-border); }
+  50% { text-shadow: 0 0 20px #fff, 0 0 40px var(--neon-border), 0 0 60px var(--neon-border); }
+}
+
+.status-x {
+  color: var(--x-color);
+  text-shadow: 0 0 10px var(--x-color);
+}
+
+.status-o {
+  color: var(--o-color);
+  text-shadow: 0 0 10px var(--o-color);
+}
+
+.status-draw {
+  color: var(--draw-color);
+  text-shadow: 0 0 10px var(--draw-color);
+}
+
+/* ===== Tabuleiro ===== */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(188, 19, 254, 0.2), rgba(0, 242, 255, 0.1));
+  padding: 6px;
+  border-radius: 14px;
   margin-bottom: 20px;
-  text-shadow: 0 0 10px #fff, 0 0 20px var(--neon-border);
 }
 
 .square {
   width: 100px;
   height: 100px;
-  background: transparent;
-  border: 1px solid #333;
-  font-size: 45px;
-  font-weight: bold;
+  background: var(--surface-color);
+  border: none;
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   color: white;
-}
-
-/* Efeito ao passar o mouse nas casas */
-.square:hover {
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.1);
-}
-
-/* Neon para o X */
-.square[data-value="X"] {
-  color: var(--x-color);
-  text-shadow: 0 0 5px var(--x-color), 
-               0 0 15px var(--x-color), 
-               0 0 30px var(--x-color);
-}
-
-/* Neon para o O */
-.square[data-value="O"] {
-  color: var(--o-color);
-  text-shadow: 0 0 5px var(--o-color), 
-               0 0 15px var(--o-color), 
-               0 0 30px var(--o-color);
-}
-
-.btn-reset {
-  margin-top: 25px;
-  width: 100%;
-  padding: 12px;
-  background: transparent;
-  color: white;
-  border: 2px solid #fff;
-  border-radius: 5px;
-  cursor: pointer;
-  font-weight: bold;
-  text-transform: uppercase;
-  transition: 0.3s;
-  /* Brilho branco no botão */
-  box-shadow: 0 0 5px #fff;
-}
-
-.btn-reset:hover {
-  background: white;
-  color: black;
-  box-shadow: 0 0 20px #fff;
-}
-
-/* Estilizando o histórico para não quebrar o visual */
-.game-info button {
-  background: #222;
-  color: #ccc;
-  border: 1px solid #444;
-  margin: 2px;
-  cursor: pointer;
-}
-/* ... mantenha as variáveis :root anteriores ... */
-
-.game {
+  border-radius: 10px;
   display: flex;
-  flex-direction: row; /* Coloca tabuleiro e info lado a lado */
-  align-items: flex-start;
-  gap: 40px;
-  background: #1a1a1a;
-  padding: 40px;
-  border-radius: 20px;
-  border: 2px solid var(--neon-border);
-  box-shadow: 0 0 15px var(--neon-border);
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-.game-info {
-  border-left: 1px solid #333;
-  padding-left: 20px;
-  min-width: 150px;
+.square:hover:not(.filled) {
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.04);
 }
 
-.game-info h3 {
-  color: var(--neon-border);
-  text-shadow: 0 0 5px var(--neon-border);
-  font-size: 1rem;
-  margin-top: 0;
-  text-transform: uppercase;
+.square:active {
+  transform: scale(0.96);
 }
 
-.game-info ol {
-  list-style: none; /* Remove os números (1. 2. 3.) */
-  padding: 0;
-  margin: 0;
+.square.filled {
+  cursor: default;
+  animation: popIn 0.25s ease-out;
 }
 
-.game-info li {
-  margin-bottom: 8px;
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
-.game-info button {
-  background: transparent;
-  color: #aaa;
-  border: 1px solid #444;
-  padding: 5px 10px;
+.square.x-mark {
+  color: var(--x-color);
+  text-shadow: 0 0 8px var(--x-color), 0 0 20px var(--x-color);
+}
+
+.square.o-mark {
+  color: var(--o-color);
+  text-shadow: 0 0 8px var(--o-color), 0 0 20px var(--o-color);
+}
+
+.square.win-cell {
+  animation: winPulse 1s ease-in-out infinite;
+}
+
+@keyframes winPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ===== Botões de Ação ===== */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
+}
+
+.btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
   cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.btn-next {
+  background: linear-gradient(135deg, var(--neon-border), #8b5cf6);
+  color: white;
+  box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
+}
+
+.btn-next:hover {
+  box-shadow: 0 4px 25px rgba(188, 19, 254, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-back {
+  background: transparent;
+  color: #888;
+  border: 1px solid #333;
+}
+
+.btn-back:hover {
+  color: white;
+  border-color: #666;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* ===== Indicador de modo ===== */
+.mode-indicator {
   font-size: 0.75rem;
-  transition: 0.2s;
-  border-radius: 4px;
+  color: #555;
+  text-align: center;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
-.game-info button:hover {
-  border-color: #fff;
-  color: #fff;
-  box-shadow: 0 0 5px #fff;
-}
+/* ===== Responsividade ===== */
+@media (max-width: 480px) {
+  .game {
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
 
-/* Responsividade: em telas pequenas, volta a ser empilhado */
-@media (max-width: 600px) {
-  .game { flex-direction: column; align-items: center; }
-  .game-info { border-left: none; border-top: 1px solid #333; padding-top: 20px; }
+  .square {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+
+  .mode-select h1 {
+    font-size: 1.6rem;
+  }
+
+  .scoreboard {
+    gap: 10px;
+  }
+
+  .score-value {
+    font-size: 1.3rem;
+  }
 }

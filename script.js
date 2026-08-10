@@ -1,115 +1,254 @@
-function Square({ value, onSquareClick }) {
+// ===== Componente: Quadrado =====
+function Square({ value, onSquareClick, isWinCell }) {
+  const classNames = [
+    "square",
+    value ? "filled" : "",
+    value === "X" ? "x-mark" : "",
+    value === "O" ? "o-mark" : "",
+    isWinCell ? "win-cell" : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <button className="square" onClick={onSquareClick}>
+    <button
+      className={classNames}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={(e) => {
+        e.preventDefault();
+        onSquareClick();
+      }}
+    >
       {value}
     </button>
   );
 }
 
-function Board({ xIsNext, squares, onPlay }) {
-  function handleClick(i) {
-    if (squares[i] || calculateWinner(squares)) return;
+// ===== Componente: Tabuleiro =====
+function Board({ xIsNext, squares, onPlay, disabled }) {
+  const winInfo = calculateWinner(squares);
 
+  function handleClick(i) {
+    if (disabled || squares[i] || winInfo) return;
     const nextSquares = squares.slice();
     nextSquares[i] = xIsNext ? "X" : "O";
     onPlay(nextSquares);
   }
 
-  const winner = calculateWinner(squares);
+  // Determinar status
   let status;
-  if (winner) {
-    status = "Vencedor: " + winner;
+  let statusClass = "";
+  if (winInfo) {
+    status = "🏆 Vencedor: " + winInfo.winner;
+    statusClass = winInfo.winner === "X" ? "winner status-x" : "winner status-o";
   } else if (!squares.includes(null)) {
-    status = "Empate!";
+    status = "🤝 Empate!";
+    statusClass = "status-draw";
   } else {
-    status = "Próximo jogador: " + (xIsNext ? "X" : "O");
+    const next = xIsNext ? "X" : "O";
+    status = "Vez de: " + next;
+    statusClass = next === "X" ? "status-x" : "status-o";
   }
+
+  const winCells = winInfo ? winInfo.line : [];
 
   return (
     <>
-      <div className="status">{status}</div>
-      <div className="board-row">
-        <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
-        <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
-        <Square value={squares[2]} onSquareClick={() => handleClick(2)} />
-      </div>
-      <div className="board-row">
-        <Square value={squares[3]} onSquareClick={() => handleClick(3)} />
-        <Square value={squares[4]} onSquareClick={() => handleClick(4)} />
-        <Square value={squares[5]} onSquareClick={() => handleClick(5)} />
-      </div>
-      <div className="board-row">
-        <Square value={squares[6]} onSquareClick={() => handleClick(6)} />
-        <Square value={squares[7]} onSquareClick={() => handleClick(7)} />
-        <Square value={squares[8]} onSquareClick={() => handleClick(8)} />
+      <div className={`status ${statusClass}`}>{status}</div>
+      <div className="board">
+        {squares.map((sq, i) => (
+          <Square
+            key={i}
+            value={sq}
+            onSquareClick={() => handleClick(i)}
+            isWinCell={winCells.includes(i)}
+          />
+        ))}
       </div>
     </>
   );
 }
 
-function Game() {
-  const [history, setHistory] = React.useState([Array(9).fill(null)]);
-  const [currentMove, setCurrentMove] = React.useState(0);
-  // Novo estado: controla quem começou a partida ATUAL
-  const [gameStarter, setGameStarter] = React.useState("X");
-
-  // A lógica de quem é o próximo agora depende de quem começou
-  // Se X começou, jogadas pares (0, 2...) são do X. Se O começou, são do O.
-  const xIsNext = gameStarter === "X" 
-    ? currentMove % 2 === 0 
-    : currentMove % 2 !== 0;
-
-  const currentSquares = history[currentMove];
-
-  function handlePlay(nextSquares) {
-    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
-    setHistory(nextHistory);
-    setCurrentMove(nextHistory.length - 1);
-  }
-
-  function jumpTo(move) {
-    setCurrentMove(move);
-  }
-
-  // Função para reiniciar e alternar o iniciador
-  function resetGame() {
-    setHistory([Array(9).fill(null)]);
-    setCurrentMove(0);
-    // Alterna o iniciador para a próxima partida
-    setGameStarter(gameStarter === "X" ? "O" : "X");
-  }
-
-  const moves = history.map((squares, move) => {
-    const description = move > 0 ? `Ir para jogada #${move}` : "Ir para o início do jogo";
-    return (
-      <li key={move}>
-        <button onClick={() => jumpTo(move)}>{description}</button>
-      </li>
-    );
-  });
-
+// ===== Componente: Placar =====
+function Scoreboard({ score, gameMode }) {
+  const labelO = gameMode === "pvc" ? "Máquina (O)" : "Jogador O";
   return (
-    <div className="game">
-      <div className="game-board">
-        <div style={{ marginBottom: "10px", color: "#666" }}>
-          Iniciador desta partida: <strong>{gameStarter}</strong>
-        </div>
-        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
-        
-        <button 
-          onClick={resetGame}
-          style={{ marginTop: "20px", padding: "10px", width: "100%", cursor: "pointer", background: "#1a237e", color: "white", border: "none", borderRadius: "4px" }}
-        >
-          Próxima Partida (Inicia com {gameStarter === "X" ? "O" : "X"})
-        </button>
+    <div className="scoreboard">
+      <div className="score-item x-score">
+        <span className="score-label">Jogador X</span>
+        <span className="score-value">{score.X}</span>
       </div>
-      <div className="game-info">
-        <ol>{moves}</ol>
+      <div className="score-item draw-score">
+        <span className="score-label">Empates</span>
+        <span className="score-value">{score.draws}</span>
+      </div>
+      <div className="score-item o-score">
+        <span className="score-label">{labelO}</span>
+        <span className="score-value">{score.O}</span>
       </div>
     </div>
   );
 }
 
+// ===== Componente: Seleção de Modo =====
+function ModeSelect({ onSelectMode }) {
+  return (
+    <div className="mode-select">
+      <h1>Jogo da Velha</h1>
+      <p>Escolha o modo de jogo</p>
+      <div className="mode-buttons">
+        <button className="mode-btn" onClick={() => onSelectMode("pvp")}>
+          <span className="mode-icon">👥</span>
+          <div className="mode-text">
+            <strong>Dois Jogadores</strong>
+            <span>Jogue contra um amigo no mesmo dispositivo</span>
+          </div>
+        </button>
+        <button className="mode-btn" onClick={() => onSelectMode("pvc")}>
+          <span className="mode-icon">🤖</span>
+          <div className="mode-text">
+            <strong>Contra a Máquina</strong>
+            <span>Desafie a inteligência artificial imbatível</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===== Componente Principal: Game =====
+function Game() {
+  const [gameMode, setGameMode] = React.useState(null); // null, "pvp", "pvc"
+  const [squares, setSquares] = React.useState(Array(9).fill(null));
+  const [xIsNext, setXIsNext] = React.useState(true);
+  const [score, setScore] = React.useState({ X: 0, O: 0, draws: 0 });
+  const [gameStarter, setGameStarter] = React.useState("X");
+  const [gameOver, setGameOver] = React.useState(false);
+  const [aiThinking, setAiThinking] = React.useState(false);
+
+  // Efeito: IA joga quando é a vez dela
+  React.useEffect(() => {
+    if (gameMode !== "pvc" || xIsNext || gameOver) return;
+    
+    const winInfo = calculateWinner(squares);
+    if (winInfo || !squares.includes(null)) return;
+
+    setAiThinking(true);
+    const timer = setTimeout(() => {
+      const bestMove = getBestMove(squares);
+      if (bestMove !== -1) {
+        const nextSquares = squares.slice();
+        nextSquares[bestMove] = "O";
+        setSquares(nextSquares);
+        setXIsNext(true);
+      }
+      setAiThinking(false);
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [squares, xIsNext, gameMode, gameOver]);
+
+  // Efeito: Verificar fim de jogo e atualizar placar
+  React.useEffect(() => {
+    const winInfo = calculateWinner(squares);
+    if (winInfo) {
+      if (!gameOver) {
+        setScore((prev) => ({ ...prev, [winInfo.winner]: prev[winInfo.winner] + 1 }));
+        setGameOver(true);
+      }
+    } else if (!squares.includes(null)) {
+      if (!gameOver) {
+        setScore((prev) => ({ ...prev, draws: prev.draws + 1 }));
+        setGameOver(true);
+      }
+    }
+  }, [squares]);
+
+  function handlePlay(nextSquares) {
+    setSquares(nextSquares);
+    setXIsNext(!xIsNext);
+  }
+
+  function resetGame() {
+    const nextStarter = gameStarter === "X" ? "O" : "X";
+    setGameStarter(nextStarter);
+    setSquares(Array(9).fill(null));
+    setXIsNext(nextStarter === "X");
+    setGameOver(false);
+    setAiThinking(false);
+  }
+
+  // Se modo PvC e o starter for O, a IA precisa jogar primeiro
+  React.useEffect(() => {
+    if (gameMode === "pvc" && !xIsNext && !gameOver && squares.every((s) => s === null)) {
+      setAiThinking(true);
+      const timer = setTimeout(() => {
+        const nextSquares = squares.slice();
+        // Primeira jogada da IA: escolher canto ou centro aleatoriamente
+        const firstMoves = [0, 2, 4, 6, 8];
+        const move = firstMoves[Math.floor(Math.random() * firstMoves.length)];
+        nextSquares[move] = "O";
+        setSquares(nextSquares);
+        setXIsNext(true);
+        setAiThinking(false);
+      }, 450);
+      return () => clearTimeout(timer);
+    }
+  }, [gameMode, xIsNext, gameOver, squares]);
+
+  function selectMode(mode) {
+    setGameMode(mode);
+    setSquares(Array(9).fill(null));
+    setXIsNext(true);
+    setGameStarter("X");
+    setScore({ X: 0, O: 0, draws: 0 });
+    setGameOver(false);
+    setAiThinking(false);
+  }
+
+  function backToMenu() {
+    setGameMode(null);
+    setSquares(Array(9).fill(null));
+    setXIsNext(true);
+    setGameStarter("X");
+    setScore({ X: 0, O: 0, draws: 0 });
+    setGameOver(false);
+    setAiThinking(false);
+  }
+
+  // Tela de seleção de modo
+  if (!gameMode) {
+    return (
+      <div className="game">
+        <ModeSelect onSelectMode={selectMode} />
+      </div>
+    );
+  }
+
+  const modeLabel = gameMode === "pvp" ? "Jogador vs Jogador" : "Jogador vs Máquina";
+  const isDisabled = aiThinking || (gameMode === "pvc" && !xIsNext);
+
+  return (
+    <div className="game">
+      <div className="mode-indicator">{modeLabel}</div>
+      <Scoreboard score={score} gameMode={gameMode} />
+      <Board
+        xIsNext={xIsNext}
+        squares={squares}
+        onPlay={handlePlay}
+        disabled={isDisabled}
+      />
+      <div className="action-buttons">
+        <button className="btn btn-next" onClick={resetGame}>
+          {gameOver ? "Próxima Partida" : "Reiniciar"}
+        </button>
+        <button className="btn btn-back" onClick={backToMenu}>
+          ← Trocar Modo
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ===== Função: Verificar Vencedor =====
 function calculateWinner(squares) {
   const lines = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8],
@@ -119,10 +258,66 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return { winner: squares[a], line: [a, b, c] };
     }
   }
   return null;
 }
 
+// ===== IA: Algoritmo Minimax =====
+function getBestMove(squares) {
+  let bestScore = -Infinity;
+  let bestMove = -1;
+
+  for (let i = 0; i < 9; i++) {
+    if (!squares[i]) {
+      const newSquares = squares.slice();
+      newSquares[i] = "O";
+      const score = minimax(newSquares, 0, false);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
+    }
+  }
+  return bestMove;
+}
+
+function minimax(squares, depth, isMaximizing) {
+  const winInfo = calculateWinner(squares);
+  
+  // Casos terminais
+  if (winInfo) {
+    return winInfo.winner === "O" ? 10 - depth : depth - 10;
+  }
+  if (!squares.includes(null)) {
+    return 0; // Empate
+  }
+
+  if (isMaximizing) {
+    // IA (O) tenta maximizar
+    let best = -Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (!squares[i]) {
+        const newSquares = squares.slice();
+        newSquares[i] = "O";
+        best = Math.max(best, minimax(newSquares, depth + 1, false));
+      }
+    }
+    return best;
+  } else {
+    // Jogador (X) tenta minimizar
+    let best = Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (!squares[i]) {
+        const newSquares = squares.slice();
+        newSquares[i] = "X";
+        best = Math.min(best, minimax(newSquares, depth + 1, true));
+      }
+    }
+    return best;
+  }
+}
+
+// ===== Renderizar App =====
 ReactDOM.render(<Game />, document.getElementById("root"));
