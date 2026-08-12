@@ -38,10 +38,10 @@ function Board({ xIsNext, squares, onPlay, disabled, players }) {
   let statusClass = "";
   if (winInfo) {
     const winnerName = winInfo.winner === "X" ? players.X : players.O;
-    status = "🏆 Vencedor: " + winnerName;
+    status = <span><i className="fa-solid fa-trophy"></i> Vencedor: {winnerName}</span>;
     statusClass = winInfo.winner === "X" ? "winner status-x" : "winner status-o";
   } else if (!squares.includes(null)) {
-    status = "🤝 Empate!";
+    status = <span><i className="fa-solid fa-handshake"></i> Empate!</span>;
     statusClass = "status-draw";
   } else {
     const next = xIsNext ? "X" : "O";
@@ -90,7 +90,7 @@ function Scoreboard({ score, players }) {
 }
 
 // ===== Componente: Seleção de Modo =====
-function ModeSelect({ onSelectMode }) {
+function ModeSelect({ onSelectMode, onBackToApp }) {
   const [showDifficulty, setShowDifficulty] = React.useState(false);
 
   if (showDifficulty) {
@@ -100,28 +100,28 @@ function ModeSelect({ onSelectMode }) {
         <p>Escolha o nível da Inteligência Artificial</p>
         <div className="mode-buttons">
           <button className="mode-btn" onClick={() => onSelectMode("pvc", "easy")}>
-            <span className="mode-icon">🟢</span>
+            <span className="mode-icon" style={{color: '#00ff73'}}><i className="fa-solid fa-circle"></i></span>
             <div className="mode-text">
               <strong>Fácil</strong>
               <span>A IA faz jogadas aleatórias</span>
             </div>
           </button>
           <button className="mode-btn" onClick={() => onSelectMode("pvc", "medium")}>
-            <span className="mode-icon">🟡</span>
+            <span className="mode-icon" style={{color: '#ffcc00'}}><i className="fa-solid fa-circle"></i></span>
             <div className="mode-text">
               <strong>Médio</strong>
               <span>A IA mescla estratégias</span>
             </div>
           </button>
           <button className="mode-btn" onClick={() => onSelectMode("pvc", "hard")}>
-            <span className="mode-icon">🟠</span>
+            <span className="mode-icon" style={{color: '#ff6600'}}><i className="fa-solid fa-circle"></i></span>
             <div className="mode-text">
               <strong>Difícil</strong>
               <span>A IA comete poucos erros</span>
             </div>
           </button>
           <button className="mode-btn" onClick={() => onSelectMode("pvc", "impossible")}>
-            <span className="mode-icon">🔴</span>
+            <span className="mode-icon" style={{color: '#ff0055'}}><i className="fa-solid fa-skull"></i></span>
             <div className="mode-text">
               <strong>Imbatível</strong>
               <span>A IA nunca perde</span>
@@ -143,20 +143,25 @@ function ModeSelect({ onSelectMode }) {
       <p>Escolha o modo de jogo</p>
       <div className="mode-buttons">
         <button className="mode-btn" onClick={() => onSelectMode("pvp", null)}>
-          <span className="mode-icon">👥</span>
+          <span className="mode-icon"><i className="fa-solid fa-user-group"></i></span>
           <div className="mode-text">
             <strong>Dois Jogadores</strong>
             <span>Jogue contra um amigo no mesmo dispositivo</span>
           </div>
         </button>
         <button className="mode-btn" onClick={() => setShowDifficulty(true)}>
-          <span className="mode-icon">🤖</span>
+          <span className="mode-icon"><i className="fa-solid fa-robot"></i></span>
           <div className="mode-text">
             <strong>Contra a Máquina</strong>
             <span>Desafie a inteligência artificial</span>
           </div>
         </button>
       </div>
+      {onBackToApp && (
+        <button className="btn btn-back" style={{marginTop: "20px"}} onClick={onBackToApp}>
+          ← Menu Principal
+        </button>
+      )}
     </div>
   );
 }
@@ -229,8 +234,8 @@ function PlayerSetup({ gameMode, onStart, onBack }) {
   );
 }
 
-// ===== Componente Principal: Game =====
-function Game() {
+// ===== Componente Principal: TicTacToe =====
+function TicTacToe({ onBackToApp }) {
   const [gameMode, setGameMode] = React.useState(null); // null, "pvp", "pvc"
   const [difficulty, setDifficulty] = React.useState(null); // null, "easy", "medium", "hard"
   const [isSettingUp, setIsSettingUp] = React.useState(false);
@@ -335,7 +340,7 @@ function Game() {
   if (!gameMode) {
     return (
       <div className="game">
-        <ModeSelect onSelectMode={selectMode} />
+        <ModeSelect onSelectMode={selectMode} onBackToApp={onBackToApp} />
       </div>
     );
   }
@@ -483,6 +488,3 @@ function minimax(squares, depth, isMaximizing, aiSymbol) {
     return best;
   }
 }
-
-// ===== Renderizar App =====
-ReactDOM.render(<Game />, document.getElementById("root"));
