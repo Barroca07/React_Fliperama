@@ -52,7 +52,7 @@ function MinesweeperGame({ difficulty, onBack }) {
   }, [difficulty]);
 
   function initGame() {
-    // Generate empty grid
+    // Gerar tabuleiro vazio
     let initialGrid = [];
     for (let r = 0; r < config.rows; r++) {
       let row = [];
@@ -78,15 +78,14 @@ function MinesweeperGame({ difficulty, onBack }) {
     while (minesPlaced < config.mines) {
       let r = Math.floor(Math.random() * config.rows);
       let c = Math.floor(Math.random() * config.cols);
-      // Avoid placing mine on first click, its adjacent cells, and already placed mines
-      // To make it simpler, just avoid the exact clicked cell
+      // Evita colocar mina no primeiro clique (para não perder de cara)
       if (!currentGrid[r][c].isMine && (r !== firstR || c !== firstC)) {
         currentGrid[r][c].isMine = true;
         minesPlaced++;
       }
     }
 
-    // Calculate adjacent mines
+    // Calcular minas adjacentes para cada célula vazia
     for (let r = 0; r < config.rows; r++) {
       for (let c = 0; c < config.cols; c++) {
         if (!currentGrid[r][c].isMine) {
@@ -117,7 +116,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     }
 
     if (newGrid[r][c].isMine) {
-      // Game Over
+      // Fim de Jogo: revelou uma mina
       revealAllMines(newGrid);
       newGrid[r][c].exploded = true;
       setGrid(newGrid);
@@ -180,7 +179,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     }
     if (revealedCount === config.rows * config.cols - config.mines) {
       setStatus("won");
-      // Flag remaining mines
+      // Marcar com bandeira as minas restantes
       let newGrid = [...grid];
       for (let r = 0; r < config.rows; r++) {
         for (let c = 0; c < config.cols; c++) {
@@ -201,7 +200,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     statusClass = "winner status-x";
   } else if (status === "lost") {
     statusMsg = <span><i className="fa-solid fa-burst"></i> Fim de Jogo</span>;
-    statusClass = "status-x"; // red
+    statusClass = "status-x"; // vermelho
   }
 
   return (
@@ -263,7 +262,7 @@ function MinesweeperCell({ cell, onClick, onRightClick }) {
       style={style}
       onClick={onClick}
       onContextMenu={onRightClick}
-      onMouseDown={(e) => e.preventDefault()} // prevent text selection
+      onMouseDown={(e) => e.preventDefault()} // impede a seleção de texto ao clicar
     >
       {content}
     </button>

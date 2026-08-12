@@ -454,7 +454,7 @@ body {
 }
 
 .ms-cell {
-  aspect-ratio: 1; /* Keep it square */
+  aspect-ratio: 1; /* Manter formato quadrado */
   width: 100%;
   min-width: 20px;
   background: var(--surface-color);
