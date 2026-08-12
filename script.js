@@ -23,7 +23,7 @@ function Square({ value, onSquareClick, isWinCell }) {
 }
 
 // ===== Componente: Tabuleiro =====
-function Board({ xIsNext, squares, onPlay, disabled }) {
+function Board({ xIsNext, squares, onPlay, disabled, players }) {
   const winInfo = calculateWinner(squares);
 
   function handleClick(i) {
@@ -37,14 +37,16 @@ function Board({ xIsNext, squares, onPlay, disabled }) {
   let status;
   let statusClass = "";
   if (winInfo) {
-    status = "🏆 Vencedor: " + winInfo.winner;
+    const winnerName = winInfo.winner === "X" ? players.X : players.O;
+    status = "🏆 Vencedor: " + winnerName;
     statusClass = winInfo.winner === "X" ? "winner status-x" : "winner status-o";
   } else if (!squares.includes(null)) {
     status = "🤝 Empate!";
     statusClass = "status-draw";
   } else {
     const next = xIsNext ? "X" : "O";
-    status = "Vez de: " + next;
+    const nextName = xIsNext ? players.X : players.O;
+    status = "Vez de: " + nextName;
     statusClass = next === "X" ? "status-x" : "status-o";
   }
 
@@ -68,12 +70,11 @@ function Board({ xIsNext, squares, onPlay, disabled }) {
 }
 
 // ===== Componente: Placar =====
-function Scoreboard({ score, gameMode }) {
-  const labelO = gameMode === "pvc" ? "Máquina (O)" : "Jogador O";
+function Scoreboard({ score, players }) {
   return (
     <div className="scoreboard">
       <div className="score-item x-score">
-        <span className="score-label">Jogador X</span>
+        <span className="score-label">{players.X}</span>
         <span className="score-value">{score.X}</span>
       </div>
       <div className="score-item draw-score">
@@ -81,7 +82,7 @@ function Scoreboard({ score, gameMode }) {
         <span className="score-value">{score.draws}</span>
       </div>
       <div className="score-item o-score">
-        <span className="score-label">{labelO}</span>
+        <span className="score-label">{players.O}</span>
         <span className="score-value">{score.O}</span>
       </div>
     </div>
@@ -90,25 +91,139 @@ function Scoreboard({ score, gameMode }) {
 
 // ===== Componente: Seleção de Modo =====
 function ModeSelect({ onSelectMode }) {
+  const [showDifficulty, setShowDifficulty] = React.useState(false);
+
+  if (showDifficulty) {
+    return (
+      <div className="mode-select">
+        <h1>Dificuldade</h1>
+        <p>Escolha o nível da Inteligência Artificial</p>
+        <div className="mode-buttons">
+          <button className="mode-btn" onClick={() => onSelectMode("pvc", "easy")}>
+            <span className="mode-icon">🟢</span>
+            <div className="mode-text">
+              <strong>Fácil</strong>
+              <span>A IA faz jogadas aleatórias</span>
+            </div>
+          </button>
+          <button className="mode-btn" onClick={() => onSelectMode("pvc", "medium")}>
+            <span className="mode-icon">🟡</span>
+            <div className="mode-text">
+              <strong>Médio</strong>
+              <span>A IA mescla estratégias</span>
+            </div>
+          </button>
+          <button className="mode-btn" onClick={() => onSelectMode("pvc", "hard")}>
+            <span className="mode-icon">🟠</span>
+            <div className="mode-text">
+              <strong>Difícil</strong>
+              <span>A IA comete poucos erros</span>
+            </div>
+          </button>
+          <button className="mode-btn" onClick={() => onSelectMode("pvc", "impossible")}>
+            <span className="mode-icon">🔴</span>
+            <div className="mode-text">
+              <strong>Imbatível</strong>
+              <span>A IA nunca perde</span>
+            </div>
+          </button>
+          <button className="mode-btn" style={{marginTop: "10px", justifyContent: "center", border: "1px solid #333"}} onClick={() => setShowDifficulty(false)}>
+            <div className="mode-text">
+              <span>Voltar</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mode-select">
       <h1>Jogo da Velha</h1>
       <p>Escolha o modo de jogo</p>
       <div className="mode-buttons">
-        <button className="mode-btn" onClick={() => onSelectMode("pvp")}>
+        <button className="mode-btn" onClick={() => onSelectMode("pvp", null)}>
           <span className="mode-icon">👥</span>
           <div className="mode-text">
             <strong>Dois Jogadores</strong>
             <span>Jogue contra um amigo no mesmo dispositivo</span>
           </div>
         </button>
-        <button className="mode-btn" onClick={() => onSelectMode("pvc")}>
+        <button className="mode-btn" onClick={() => setShowDifficulty(true)}>
           <span className="mode-icon">🤖</span>
           <div className="mode-text">
             <strong>Contra a Máquina</strong>
-            <span>Desafie a inteligência artificial imbatível</span>
+            <span>Desafie a inteligência artificial</span>
           </div>
         </button>
+      </div>
+    </div>
+  );
+}
+
+// ===== Componente: Setup de Jogadores =====
+function PlayerSetup({ gameMode, onStart, onBack }) {
+  const [player1Name, setPlayer1Name] = React.useState(gameMode === "pvc" ? "Jogador" : "Jogador 1");
+  const [player2Name, setPlayer2Name] = React.useState(gameMode === "pvc" ? "Máquina" : "Jogador 2");
+  const [player1Is, setPlayer1Is] = React.useState("X");
+
+  function handleStart() {
+    const p1 = player1Name.trim() || (gameMode === "pvc" ? "Jogador" : "Jogador 1");
+    const p2 = player2Name.trim() || (gameMode === "pvc" ? "Máquina" : "Jogador 2");
+    
+    const pX = player1Is === "X" ? p1 : p2;
+    const pO = player1Is === "X" ? p2 : p1;
+    
+    onStart({ X: pX, O: pO }, player1Is);
+  }
+
+  return (
+    <div className="mode-select">
+      <h1>Configuração</h1>
+      
+      <div className="setup-form">
+        <div className="form-group">
+          <label>{gameMode === "pvc" ? "Seu Nome:" : "Nome do Jogador 1:"}</label>
+          <input 
+            type="text" 
+            className="name-input" 
+            value={player1Name} 
+            onChange={e => setPlayer1Name(e.target.value)} 
+            maxLength={15}
+          />
+        </div>
+
+        {gameMode === "pvp" && (
+          <div className="form-group">
+            <label>Nome do Jogador 2:</label>
+            <input 
+              type="text" 
+              className="name-input" 
+              value={player2Name} 
+              onChange={e => setPlayer2Name(e.target.value)} 
+              maxLength={15}
+            />
+          </div>
+        )}
+
+        <div className="form-group">
+          <label>{gameMode === "pvc" ? "Você quer jogar com:" : "Jogador 1 joga com:"}</label>
+          <div className="symbol-toggle">
+            <button 
+              className={`toggle-btn ${player1Is === "X" ? "active x-active" : ""}`} 
+              onClick={() => setPlayer1Is("X")}
+            >X</button>
+            <button 
+              className={`toggle-btn ${player1Is === "O" ? "active o-active" : ""}`} 
+              onClick={() => setPlayer1Is("O")}
+            >O</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="action-buttons" style={{marginTop: "10px"}}>
+        <button className="btn btn-next" onClick={handleStart}>Começar Partida</button>
+        <button className="btn btn-back" onClick={onBack}>Voltar</button>
       </div>
     </div>
   );
@@ -117,6 +232,11 @@ function ModeSelect({ onSelectMode }) {
 // ===== Componente Principal: Game =====
 function Game() {
   const [gameMode, setGameMode] = React.useState(null); // null, "pvp", "pvc"
+  const [difficulty, setDifficulty] = React.useState(null); // null, "easy", "medium", "hard"
+  const [isSettingUp, setIsSettingUp] = React.useState(false);
+  const [players, setPlayers] = React.useState({ X: "Jogador X", O: "Jogador O" });
+  const [aiSymbol, setAiSymbol] = React.useState("O");
+
   const [squares, setSquares] = React.useState(Array(9).fill(null));
   const [xIsNext, setXIsNext] = React.useState(true);
   const [score, setScore] = React.useState({ X: 0, O: 0, draws: 0 });
@@ -126,25 +246,28 @@ function Game() {
 
   // Efeito: IA joga quando é a vez dela
   React.useEffect(() => {
-    if (gameMode !== "pvc" || xIsNext || gameOver) return;
+    if (gameMode !== "pvc" || gameOver) return;
     
+    const isAiTurn = (xIsNext && aiSymbol === "X") || (!xIsNext && aiSymbol === "O");
+    if (!isAiTurn) return;
+
     const winInfo = calculateWinner(squares);
     if (winInfo || !squares.includes(null)) return;
 
     setAiThinking(true);
     const timer = setTimeout(() => {
-      const bestMove = getBestMove(squares);
+      const bestMove = getBestMove(squares, difficulty, aiSymbol);
       if (bestMove !== -1) {
         const nextSquares = squares.slice();
-        nextSquares[bestMove] = "O";
+        nextSquares[bestMove] = aiSymbol;
         setSquares(nextSquares);
-        setXIsNext(true);
+        setXIsNext(aiSymbol === "O"); // Se a IA for X, a próxima é false (O); se for O, a próxima é true (X)
       }
       setAiThinking(false);
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [squares, xIsNext, gameMode, gameOver]);
+  }, [squares, xIsNext, gameMode, gameOver, aiSymbol, difficulty]);
 
   // Efeito: Verificar fim de jogo e atualizar placar
   React.useEffect(() => {
@@ -176,29 +299,21 @@ function Game() {
     setAiThinking(false);
   }
 
-  // Se modo PvC e o starter for O, a IA precisa jogar primeiro
-  React.useEffect(() => {
-    if (gameMode === "pvc" && !xIsNext && !gameOver && squares.every((s) => s === null)) {
-      setAiThinking(true);
-      const timer = setTimeout(() => {
-        const nextSquares = squares.slice();
-        // Primeira jogada da IA: escolher canto ou centro aleatoriamente
-        const firstMoves = [0, 2, 4, 6, 8];
-        const move = firstMoves[Math.floor(Math.random() * firstMoves.length)];
-        nextSquares[move] = "O";
-        setSquares(nextSquares);
-        setXIsNext(true);
-        setAiThinking(false);
-      }, 450);
-      return () => clearTimeout(timer);
-    }
-  }, [gameMode, xIsNext, gameOver, squares]);
-
-  function selectMode(mode) {
+  function selectMode(mode, diff) {
     setGameMode(mode);
+    setDifficulty(diff);
+    setIsSettingUp(true);
+  }
+
+  function handleSetupStart(playersConfig, p1Symbol) {
+    setPlayers(playersConfig);
+    if (gameMode === "pvc") {
+      setAiSymbol(p1Symbol === "X" ? "O" : "X");
+    }
+    setIsSettingUp(false);
+    setGameStarter("X");
     setSquares(Array(9).fill(null));
     setXIsNext(true);
-    setGameStarter("X");
     setScore({ X: 0, O: 0, draws: 0 });
     setGameOver(false);
     setAiThinking(false);
@@ -206,6 +321,8 @@ function Game() {
 
   function backToMenu() {
     setGameMode(null);
+    setDifficulty(null);
+    setIsSettingUp(false);
     setSquares(Array(9).fill(null));
     setXIsNext(true);
     setGameStarter("X");
@@ -223,18 +340,34 @@ function Game() {
     );
   }
 
-  const modeLabel = gameMode === "pvp" ? "Jogador vs Jogador" : "Jogador vs Máquina";
-  const isDisabled = aiThinking || (gameMode === "pvc" && !xIsNext);
+  // Tela de configuração de jogadores
+  if (isSettingUp) {
+    return (
+      <div className="game">
+        <PlayerSetup 
+          gameMode={gameMode} 
+          onStart={handleSetupStart} 
+          onBack={backToMenu} 
+        />
+      </div>
+    );
+  }
+
+  const diffLabels = { easy: "Fácil", medium: "Médio", hard: "Difícil", impossible: "Imbatível" };
+  const modeLabel = gameMode === "pvp" ? "Jogador vs Jogador" : `Jogador vs Máquina (${diffLabels[difficulty]})`;
+  const isAiTurn = gameMode === "pvc" && ((xIsNext && aiSymbol === "X") || (!xIsNext && aiSymbol === "O"));
+  const isDisabled = aiThinking || isAiTurn || gameOver;
 
   return (
     <div className="game">
       <div className="mode-indicator">{modeLabel}</div>
-      <Scoreboard score={score} gameMode={gameMode} />
+      <Scoreboard score={score} players={players} />
       <Board
         xIsNext={xIsNext}
         squares={squares}
         onPlay={handlePlay}
         disabled={isDisabled}
+        players={players}
       />
       <div className="action-buttons">
         <button className="btn btn-next" onClick={resetGame}>
@@ -264,16 +397,49 @@ function calculateWinner(squares) {
   return null;
 }
 
-// ===== IA: Algoritmo Minimax =====
-function getBestMove(squares) {
+// ===== IA: Algoritmo Minimax e Dificuldades =====
+function getBestMove(squares, difficulty, aiSymbol) {
+  const availableMoves = [];
+  for (let i = 0; i < 9; i++) {
+    if (!squares[i]) availableMoves.push(i);
+  }
+
+  if (availableMoves.length === 0) return -1;
+
+  // Se for a primeira jogada (tabuleiro vazio), escolhemos um canto ou centro
+  if (availableMoves.length === 9) {
+    const firstMoves = [0, 2, 4, 6, 8];
+    return firstMoves[Math.floor(Math.random() * firstMoves.length)];
+  }
+
+  // Dificuldade Fácil: 100% aleatório
+  if (difficulty === "easy") {
+    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+  }
+
+  // Dificuldade Média: 50% de chance de jogar aleatório, 50% minimax
+  if (difficulty === "medium") {
+    if (Math.random() < 0.5) {
+      return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    }
+  }
+
+  // Dificuldade Difícil: 15% de chance de jogar aleatório, 85% minimax
+  if (difficulty === "hard") {
+    if (Math.random() < 0.15) {
+      return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+    }
+  }
+
+  // Dificuldade Imbatível (ou fallback): 100% minimax
   let bestScore = -Infinity;
   let bestMove = -1;
 
   for (let i = 0; i < 9; i++) {
     if (!squares[i]) {
       const newSquares = squares.slice();
-      newSquares[i] = "O";
-      const score = minimax(newSquares, 0, false);
+      newSquares[i] = aiSymbol;
+      const score = minimax(newSquares, 0, false, aiSymbol);
       if (score > bestScore) {
         bestScore = score;
         bestMove = i;
@@ -283,36 +449,35 @@ function getBestMove(squares) {
   return bestMove;
 }
 
-function minimax(squares, depth, isMaximizing) {
+function minimax(squares, depth, isMaximizing, aiSymbol) {
+  const humanSymbol = aiSymbol === "X" ? "O" : "X";
   const winInfo = calculateWinner(squares);
   
   // Casos terminais
   if (winInfo) {
-    return winInfo.winner === "O" ? 10 - depth : depth - 10;
+    return winInfo.winner === aiSymbol ? 10 - depth : depth - 10;
   }
   if (!squares.includes(null)) {
     return 0; // Empate
   }
 
   if (isMaximizing) {
-    // IA (O) tenta maximizar
     let best = -Infinity;
     for (let i = 0; i < 9; i++) {
       if (!squares[i]) {
         const newSquares = squares.slice();
-        newSquares[i] = "O";
-        best = Math.max(best, minimax(newSquares, depth + 1, false));
+        newSquares[i] = aiSymbol;
+        best = Math.max(best, minimax(newSquares, depth + 1, false, aiSymbol));
       }
     }
     return best;
   } else {
-    // Jogador (X) tenta minimizar
     let best = Infinity;
     for (let i = 0; i < 9; i++) {
       if (!squares[i]) {
         const newSquares = squares.slice();
-        newSquares[i] = "X";
-        best = Math.min(best, minimax(newSquares, depth + 1, true));
+        newSquares[i] = humanSymbol;
+        best = Math.min(best, minimax(newSquares, depth + 1, true, aiSymbol));
       }
     }
     return best;
