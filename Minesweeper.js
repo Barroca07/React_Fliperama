@@ -2,6 +2,7 @@
 const MS_DIFFICULTIES = {
   easy: { rows: 9, cols: 9, mines: 10, label: "Fácil" },
   medium: { rows: 16, cols: 16, mines: 40, label: "Médio" },
+  hard: { rows: 20, cols: 20, mines: 80, label: "Difícil" },
 };
 
 function Minesweeper({ onBackToApp }) {
@@ -28,6 +29,13 @@ function Minesweeper({ onBackToApp }) {
                 <span>Tabuleiro 16x16, 40 Minas</span>
               </div>
             </button>
+            <button className="mode-btn" onClick={() => setDifficulty("hard")}>
+              <span className="mode-icon" style={{color: '#ff6600'}}><i className="fa-solid fa-circle"></i></span>
+              <div className="mode-text">
+                <strong>Difícil</strong>
+                <span>Tabuleiro 20x20, 80 Minas</span>
+              </div>
+            </button>
           </div>
           <button className="btn btn-back" style={{marginTop: "20px"}} onClick={onBackToApp}>
             ← Menu Principal
@@ -46,6 +54,7 @@ function MinesweeperGame({ difficulty, onBack }) {
   const [status, setStatus] = React.useState("playing"); // playing, won, lost
   const [flagsPlaced, setFlagsPlaced] = React.useState(0);
   const [isFirstClick, setIsFirstClick] = React.useState(true);
+  const [isFlagMode, setIsFlagMode] = React.useState(false); // Mobile flag mode
 
   React.useEffect(() => {
     initGame();
@@ -71,6 +80,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     setStatus("playing");
     setFlagsPlaced(0);
     setIsFirstClick(true);
+    setIsFlagMode(false);
   }
 
   function placeMines(firstR, firstC, currentGrid) {
@@ -106,6 +116,12 @@ function MinesweeperGame({ difficulty, onBack }) {
 
   function handleCellClick(r, c) {
     if (status !== "playing") return;
+
+    if (isFlagMode && !grid[r][c].isRevealed) {
+      toggleFlag(r, c);
+      return;
+    }
+
     let newGrid = [...grid.map(row => [...row])];
     
     if (newGrid[r][c].isRevealed || newGrid[r][c].isFlagged) return;
@@ -129,8 +145,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     checkWin(newGrid);
   }
 
-  function handleCellRightClick(e, r, c) {
-    e.preventDefault();
+  function toggleFlag(r, c) {
     if (status !== "playing") return;
     
     let newGrid = [...grid.map(row => [...row])];
@@ -141,6 +156,11 @@ function MinesweeperGame({ difficulty, onBack }) {
     newGrid[r][c].isFlagged = !newGrid[r][c].isFlagged;
     setFlagsPlaced(prev => newGrid[r][c].isFlagged ? prev + 1 : prev - 1);
     setGrid(newGrid);
+  }
+
+  function handleCellRightClick(e, r, c) {
+    e.preventDefault();
+    toggleFlag(r, c);
   }
 
   function floodFill(grid, r, c) {
@@ -208,6 +228,17 @@ function MinesweeperGame({ difficulty, onBack }) {
       <div className="mode-indicator">Campo Minado ({config.label})</div>
       <div className={`status ${statusClass}`}>{statusMsg}</div>
       
+      <div className="flag-mode-toggle" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+        <button 
+          className={`btn ${isFlagMode ? 'btn-next' : 'btn-back'}`} 
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', width: 'auto' }}
+          onClick={() => setIsFlagMode(!isFlagMode)}
+        >
+          <i className="fa-solid fa-flag"></i>
+          {isFlagMode ? "Modo Bandeira: LIGADO" : "Modo Bandeira: DESLIGADO"}
+        </button>
+      </div>
+
       <div className="ms-board" style={{ gridTemplateColumns: `repeat(${config.cols}, 1fr)` }} onContextMenu={(e) => e.preventDefault()}>
         {grid.map((row, r) => 
           row.map((cell, c) => (

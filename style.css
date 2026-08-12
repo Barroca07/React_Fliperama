@@ -10,6 +10,165 @@
   --draw-color: #ffcc00;
 }
 
+/* ===== Tema Claro (Light Mode) ===== */
+body.light-mode {
+  --bg-color: #fafbfc;
+  --surface-color: #ffffff;
+  --text-color: #1a1a24;
+  --x-color: #e6005c;
+  --o-color: #0088cc;
+  --neon-border: #9b20d4;
+  --neon-glow: rgba(155, 32, 212, 0.15);
+  --draw-color: #d19a00;
+  
+  background-image: 
+    radial-gradient(ellipse at 20% 50%, rgba(155, 32, 212, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 50%, rgba(0, 136, 204, 0.08) 0%, transparent 50%);
+}
+
+body.light-mode .game {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 
+    0 10px 40px rgba(0, 0, 0, 0.06),
+    0 0 20px var(--neon-glow),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6);
+  border-color: rgba(155, 32, 212, 0.2);
+}
+
+body.light-mode .mode-btn {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: #ddd;
+  color: var(--text-color);
+}
+
+body.light-mode .mode-btn:hover {
+  background: rgba(161, 18, 219, 0.08);
+  border-color: var(--neon-border);
+}
+
+body.light-mode .mode-btn .mode-text span {
+  color: #666;
+}
+
+body.light-mode .btn-back {
+  color: #555;
+  border-color: #ccc;
+}
+
+body.light-mode .btn-back:hover {
+  color: var(--text-color);
+  border-color: #999;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-mode .score-item {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: #eee;
+}
+
+body.light-mode .name-input {
+  background: #f9f9f9;
+  border-color: #ccc;
+  color: var(--text-color);
+}
+
+body.light-mode .toggle-btn {
+  background: #f9f9f9;
+  border-color: #ccc;
+  color: #666;
+}
+
+body.light-mode .square {
+  background: #f4f6f8;
+  color: var(--text-color);
+}
+
+body.light-mode .square:hover:not(.filled) {
+  background: #e9ecef;
+}
+
+body.light-mode .ms-board {
+  background: linear-gradient(135deg, rgba(161, 18, 219, 0.1), rgba(0, 153, 179, 0.05));
+}
+
+body.light-mode .ms-cell {
+  background: #f4f6f8;
+  border-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-color);
+}
+
+body.light-mode .ms-cell:hover:not(.revealed) {
+  background: #e9ecef;
+}
+
+body.light-mode .ms-cell.revealed {
+  background: rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.02);
+}
+
+body.light-mode .ms-cell.exploded {
+  background: rgba(230, 0, 76, 0.2);
+  box-shadow: 0 0 10px rgba(230, 0, 76, 0.3);
+}
+
+body.light-mode .status-ms {
+  color: var(--text-color);
+  text-shadow: none;
+}
+
+body.light-mode .status-x {
+  text-shadow: 0 0 2px var(--x-color);
+}
+
+body.light-mode .status-o {
+  text-shadow: 0 0 2px var(--o-color);
+}
+
+body.light-mode .status-draw {
+  text-shadow: 0 0 2px var(--draw-color);
+}
+
+body.light-mode .score-item.x-score .score-label,
+body.light-mode .score-item.o-score .score-label,
+body.light-mode .score-item.draw-score .score-label {
+  text-shadow: none;
+  font-weight: 800;
+}
+
+body.light-mode .square.x-mark,
+body.light-mode .square.o-mark {
+  text-shadow: 0 0 5px currentColor;
+}
+
+/* ===== Botão de Tema (Theme Toggle) ===== */
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--surface-color);
+  border: 1px solid var(--neon-border);
+  color: var(--text-color);
+  padding: 10px 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 10px var(--neon-glow);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px var(--neon-glow);
+}
+
 /* ===== Reset & Base ===== */
 *, *::before, *::after {
   box-sizing: border-box;
@@ -445,9 +604,9 @@ body {
 /* ===== Campo Minado ===== */
 .ms-board {
   display: grid;
-  gap: 4px;
+  gap: 2px;
   background: linear-gradient(135deg, rgba(188, 19, 254, 0.2), rgba(0, 242, 255, 0.1));
-  padding: 6px;
+  padding: 4px;
   border-radius: 14px;
   margin-bottom: 20px;
   width: 100%;
@@ -456,10 +615,9 @@ body {
 .ms-cell {
   aspect-ratio: 1; /* Manter formato quadrado */
   width: 100%;
-  min-width: 20px;
   background: var(--surface-color);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  font-size: 1.2rem;
+  font-size: clamp(10px, 3vw, 1.2rem);
   font-weight: 800;
   font-family: 'Outfit', sans-serif;
   cursor: pointer;
@@ -530,4 +688,59 @@ body {
   .score-value {
     font-size: 1.3rem;
   }
+}
+
+/* ===== Jogo da Cobrinha ===== */
+.snake-board {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 2px;
+  background: var(--surface-color);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+body.light-mode .snake-board {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: #e9ecef;
+}
+
+.snake-cell {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 2px;
+  width: 100%;
+  height: 100%;
+}
+
+body.light-mode .snake-cell {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.snake-body {
+  background: var(--o-color);
+  box-shadow: 0 0 5px var(--o-color);
+}
+
+.snake-head {
+  background: #00ff73; /* bright green */
+  box-shadow: 0 0 8px #00ff73;
+  border-radius: 4px;
+}
+
+.snake-apple {
+  background: var(--x-color);
+  box-shadow: 0 0 8px var(--x-color);
+  border-radius: 50%;
+  animation: pulseApple 1s infinite alternate;
+}
+
+@keyframes pulseApple {
+  from { transform: scale(0.9); }
+  to { transform: scale(1.1); box-shadow: 0 0 12px var(--x-color); }
+}
+
 }
