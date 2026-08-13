@@ -1,13 +1,13 @@
 // ===== Minesweeper.js =====
 const MS_DIFFICULTIES = {
   easy: { rows: 9, cols: 9, mines: 10, label: "Fácil" },
-  medium: { rows: 16, cols: 16, mines: 40, label: "Médio" },
-  hard: { rows: 20, cols: 20, mines: 80, label: "Difícil" },
+  medium: { rows: 16, cols: 16, mines: 25, label: "Médio" },
+  hard: { rows: 20, cols: 20, mines: 40, label: "Difícil" },
 };
 
 function Minesweeper({ onBackToApp }) {
   const [difficulty, setDifficulty] = React.useState(null);
-  
+
   if (!difficulty) {
     return (
       <div className="game">
@@ -16,35 +16,35 @@ function Minesweeper({ onBackToApp }) {
           <p>Escolha a Dificuldade</p>
           <div className="mode-buttons">
             <button className="mode-btn" onClick={() => setDifficulty("easy")}>
-              <span className="mode-icon" style={{color: '#00ff73'}}><i className="fa-solid fa-circle"></i></span>
+              <span className="mode-icon" style={{ color: '#00ff73' }}><i className="fa-solid fa-circle"></i></span>
               <div className="mode-text">
                 <strong>Fácil</strong>
                 <span>Tabuleiro 9x9, 10 Minas</span>
               </div>
             </button>
             <button className="mode-btn" onClick={() => setDifficulty("medium")}>
-              <span className="mode-icon" style={{color: '#ffcc00'}}><i className="fa-solid fa-circle"></i></span>
+              <span className="mode-icon" style={{ color: '#ffcc00' }}><i className="fa-solid fa-circle"></i></span>
               <div className="mode-text">
                 <strong>Médio</strong>
-                <span>Tabuleiro 16x16, 40 Minas</span>
+                <span>Tabuleiro 16x16, 25 Minas</span>
               </div>
             </button>
             <button className="mode-btn" onClick={() => setDifficulty("hard")}>
-              <span className="mode-icon" style={{color: '#ff6600'}}><i className="fa-solid fa-circle"></i></span>
+              <span className="mode-icon" style={{ color: '#ff6600' }}><i className="fa-solid fa-circle"></i></span>
               <div className="mode-text">
                 <strong>Difícil</strong>
-                <span>Tabuleiro 20x20, 80 Minas</span>
+                <span>Tabuleiro 20x20, 40 Minas</span>
               </div>
             </button>
           </div>
-          <button className="btn btn-back" style={{marginTop: "20px"}} onClick={onBackToApp}>
+          <button className="btn btn-back" style={{ marginTop: "20px" }} onClick={onBackToApp}>
             ← Menu Principal
           </button>
         </div>
       </div>
     );
   }
-  
+
   return <MinesweeperGame difficulty={difficulty} onBack={() => setDifficulty(null)} />;
 }
 
@@ -123,7 +123,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     }
 
     let newGrid = [...grid.map(row => [...row])];
-    
+
     if (newGrid[r][c].isRevealed || newGrid[r][c].isFlagged) return;
 
     if (isFirstClick) {
@@ -147,7 +147,7 @@ function MinesweeperGame({ difficulty, onBack }) {
 
   function toggleFlag(r, c) {
     if (status !== "playing") return;
-    
+
     let newGrid = [...grid.map(row => [...row])];
     if (newGrid[r][c].isRevealed) return;
 
@@ -163,16 +163,20 @@ function MinesweeperGame({ difficulty, onBack }) {
     toggleFlag(r, c);
   }
 
-  function floodFill(grid, r, c) {
-    if (r < 0 || r >= config.rows || c < 0 || c >= config.cols) return;
-    if (grid[r][c].isRevealed || grid[r][c].isFlagged) return;
+  function floodFill(grid, startR, startC) {
+    const stack = [[startR, startC]];
+    while (stack.length > 0) {
+      const [r, c] = stack.pop();
+      if (r < 0 || r >= config.rows || c < 0 || c >= config.cols) continue;
+      if (grid[r][c].isRevealed || grid[r][c].isFlagged) continue;
 
-    grid[r][c].isRevealed = true;
+      grid[r][c].isRevealed = true;
 
-    if (grid[r][c].adjacentMines === 0) {
-      for (let i = -1; i <= 1; i++) {
-        for (let j = -1; j <= 1; j++) {
-          floodFill(grid, r + i, c + j);
+      if (grid[r][c].adjacentMines === 0) {
+        for (let i = -1; i <= 1; i++) {
+          for (let j = -1; j <= 1; j++) {
+            stack.push([r + i, c + j]);
+          }
         }
       }
     }
@@ -204,7 +208,7 @@ function MinesweeperGame({ difficulty, onBack }) {
       for (let r = 0; r < config.rows; r++) {
         for (let c = 0; c < config.cols; c++) {
           if (newGrid[r][c].isMine && !newGrid[r][c].isFlagged) {
-             newGrid[r][c].isFlagged = true;
+            newGrid[r][c].isFlagged = true;
           }
         }
       }
@@ -224,13 +228,13 @@ function MinesweeperGame({ difficulty, onBack }) {
   }
 
   return (
-    <div className="game" style={{ maxWidth: difficulty === "medium" ? '600px' : '420px', width: '95vw' }}>
+    <div className="game ms-game-container" style={{ maxWidth: difficulty === "easy" ? '420px' : difficulty === "medium" ? '580px' : '680px', width: '95vw' }}>
       <div className="mode-indicator">Campo Minado ({config.label})</div>
       <div className={`status ${statusClass}`}>{statusMsg}</div>
-      
+
       <div className="flag-mode-toggle" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
-        <button 
-          className={`btn ${isFlagMode ? 'btn-next' : 'btn-back'}`} 
+        <button
+          className={`btn ${isFlagMode ? 'btn-next' : 'btn-back'}`}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px 20px', width: 'auto' }}
           onClick={() => setIsFlagMode(!isFlagMode)}
         >
@@ -240,9 +244,9 @@ function MinesweeperGame({ difficulty, onBack }) {
       </div>
 
       <div className="ms-board" style={{ gridTemplateColumns: `repeat(${config.cols}, 1fr)` }} onContextMenu={(e) => e.preventDefault()}>
-        {grid.map((row, r) => 
+        {grid.map((row, r) =>
           row.map((cell, c) => (
-            <MinesweeperCell 
+            <MinesweeperCell
               key={`${r}-${c}`}
               cell={cell}
               onClick={() => handleCellClick(r, c)}
@@ -273,7 +277,7 @@ function MinesweeperCell({ cell, onClick, onRightClick }) {
       content = cell.adjacentMines;
     }
   } else if (cell.isFlagged) {
-    content = <i className="fa-solid fa-flag" style={{color: '#ff0055'}}></i>;
+    content = <i className="fa-solid fa-flag" style={{ color: '#ff0055' }}></i>;
   }
 
   const colors = ["", "#00f2ff", "#00ff73", "#ff0055", "#bc13fe", "#ffcc00", "#00f2ff", "#fff", "#fff"];
@@ -288,7 +292,7 @@ function MinesweeperCell({ cell, onClick, onRightClick }) {
   if (cell.exploded) classNames += " exploded";
 
   return (
-    <button 
+    <button
       className={classNames}
       style={style}
       onClick={onClick}
