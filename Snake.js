@@ -6,7 +6,6 @@ function Snake({ onBackToApp }) {
   
   const [snake, setSnake] = React.useState([]);
   const [dir, setDir] = React.useState({ x: 0, y: -1 });
-  const [nextDir, setNextDir] = React.useState({ x: 0, y: -1 });
   const [apple, setApple] = React.useState({ x: 0, y: 0 });
   const [score, setScore] = React.useState(0);
   const [touchStart, setTouchStart] = React.useState(null);
@@ -20,20 +19,26 @@ function Snake({ onBackToApp }) {
   const currentDiff = diffConfigs[difficulty] || diffConfigs.easy;
 
   const snakeRef = React.useRef(snake);
-  const dirRef = React.useRef(nextDir);
+  const dirRef = React.useRef(dir);
   const appleRef = React.useRef(apple);
   const statusRef = React.useRef(status);
   const diffRef = React.useRef(currentDiff);
   const sizeRef = React.useRef(size);
+  // Fila de direções: armazena até 2 direções pendentes para evitar inversão com teclas rápidas
+  const dirQueueRef = React.useRef([]);
 
   React.useEffect(() => {
     snakeRef.current = snake;
-    dirRef.current = nextDir;
     appleRef.current = apple;
     statusRef.current = status;
     diffRef.current = currentDiff;
     sizeRef.current = size;
-  }, [snake, nextDir, apple, status, currentDiff, size]);
+  }, [snake, apple, status, currentDiff, size]);
+
+  // Mantém dirRef sincronizado separadamente para não depender do render
+  React.useEffect(() => {
+    dirRef.current = dir;
+  }, [dir]);
 
   function spawnApple(currentSnake, boardSize) {
     let newApple;
@@ -53,10 +58,17 @@ function Snake({ onBackToApp }) {
     const center = Math.floor(selectedSize / 2);
     setSnake([{ x: center, y: center }]);
     setDir({ x: 0, y: -1 });
-    setNextDir({ x: 0, y: -1 });
+    dirRef.current = { x: 0, y: -1 };
+    dirQueueRef.current = [];
     setScore(0);
     setStatus("playing");
     setApple(spawnApple([{ x: center, y: center }], selectedSize));
+  }
+
+  // Valida se a nova direção não é oposta à direção de referência
+  function isOpposite(newDir, refDir) {
+    return (newDir.x !== 0 && newDir.x === -refDir.x) ||
+           (newDir.y !== 0 && newDir.y === -refDir.y);
   }
 
   React.useEffect(() => {
@@ -68,7 +80,6 @@ function Snake({ onBackToApp }) {
       }
       
       const key = e.key;
-      const currentDir = dirRef.current;
       
       let newDir = null;
       if (key === "ArrowUp" || key === "w" || key === "W") newDir = { x: 0, y: -1 };
@@ -77,9 +88,15 @@ function Snake({ onBackToApp }) {
       if (key === "ArrowRight" || key === "d" || key === "D") newDir = { x: 1, y: 0 };
 
       if (newDir) {
-        if ((newDir.x !== 0 && currentDir.x !== -newDir.x) || 
-            (newDir.y !== 0 && currentDir.y !== -newDir.y)) {
-          setNextDir(newDir);
+        // Valida contra a última direção na fila, ou a direção atual se a fila estiver vazia
+        const queue = dirQueueRef.current;
+        const lastDir = queue.length > 0 ? queue[queue.length - 1] : dirRef.current;
+        
+        if (!isOpposite(newDir, lastDir) && (newDir.x !== lastDir.x || newDir.y !== lastDir.y)) {
+          // Limita a fila a 2 entradas para evitar acúmulo excessivo
+          if (queue.length < 2) {
+            dirQueueRef.current = [...queue, newDir];
+          }
         }
       }
     }
@@ -98,11 +115,16 @@ function Snake({ onBackToApp }) {
 
     const interval = setInterval(() => {
       const currentSnake = snakeRef.current;
-      const currentDir = dirRef.current;
       const currentApple = appleRef.current;
       const currentSize = sizeRef.current;
 
-      setDir(currentDir);
+      // Consome a próxima direção da fila, se houver
+      let currentDir = dirRef.current;
+      if (dirQueueRef.current.length > 0) {
+        currentDir = dirQueueRef.current.shift();
+        dirRef.current = currentDir;
+        setDir(currentDir);
+      }
 
       const head = currentSnake[0];
       const newHead = { x: head.x + currentDir.x, y: head.y + currentDir.y };
@@ -168,11 +190,13 @@ function Snake({ onBackToApp }) {
   }
 
   function changeDir(x, y) {
-    const currentDir = dirRef.current;
+    const queue = dirQueueRef.current;
+    const lastDir = queue.length > 0 ? queue[queue.length - 1] : dirRef.current;
     let newDir = { x, y };
-    if ((newDir.x !== 0 && currentDir.x !== -newDir.x) || 
-        (newDir.y !== 0 && currentDir.y !== -newDir.y)) {
-      setNextDir(newDir);
+    if (!isOpposite(newDir, lastDir) && (newDir.x !== lastDir.x || newDir.y !== lastDir.y)) {
+      if (queue.length < 2) {
+        dirQueueRef.current = [...queue, newDir];
+      }
     }
   }
 
