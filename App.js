@@ -14,6 +14,8 @@ function App() {
     content = <Minesweeper onBackToApp={() => setCurrentGame(null)} />;
   } else if (currentGame === "snake") {
     content = <Snake onBackToApp={() => setCurrentGame(null)} />;
+  } else if (currentGame === "battleship") {
+    content = <Battleship onBackToApp={() => setCurrentGame(null)} />;
   } else {
     content = (
       <div className="game">
@@ -40,6 +42,13 @@ function App() {
               <div className="mode-text">
                 <strong>Cobrinha</strong>
                 <span>O clássico jogo do celular</span>
+              </div>
+            </button>
+            <button className="mode-btn" onClick={() => setCurrentGame("battleship")}>
+              <span className="mode-icon"><i className="fa-solid fa-ship"></i></span>
+              <div className="mode-text">
+                <strong>Batalha Naval</strong>
+                <span>Afunde todos os navios inimigos</span>
               </div>
             </button>
           </div>

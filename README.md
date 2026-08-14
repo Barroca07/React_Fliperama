@@ -10,6 +10,7 @@ Uma coleção interativa de mini-jogos clássicos construída inteiramente como 
 * **Snake (Jogo da Cobrinha):** O clássico jogo de agilidade e reflexos. Ideal para praticar manipulação contínua de estado, detecção de colisões e controle de intervalos de tempo (game loops) dentro do React (`Snake.js`)[cite: 2].
 * **Campo Minado (Minesweeper):** Jogo de raciocínio lógico e dedução[cite: 2]. Desenvolvido para treinar a manipulação de matrizes (arrays bidimensionais), algoritmos de recursão e múltiplos estados simultâneos (`Minesweeper.js`)[cite: 2].
 * **Jogo da Velha (Tic Tac Toe):** O tradicional jogo de estratégia[cite: 2], focado em implementar lógica de vitória algorítmica, alternância de turnos e imutabilidade de estado (`TicTacToe.js`)[cite: 2].
+* **Batalha Naval (Battleship):** O famoso jogo de tabuleiro estratégico. Foca no controle de dois grids separados, ataques por turnos, e uma IA básica com memória e padrões de ataque (`Battleship.js`).
 
 ## 🛠️ Tecnologias e Estrutura
 
