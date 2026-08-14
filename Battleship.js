@@ -1,19 +1,25 @@
 // ===== Battleship.js =====
 const BS_DIFFICULTIES = {
-  easy: { gridSize: 8, label: "Fácil", description: "Tabuleiro 8×8, 4 navios", ships: [
+  easy: { label: "Fácil", desc: "Tiros aleatórios" },
+  medium: { label: "Médio", desc: "Persegue navios ao acertar" },
+  hard: { label: "Difícil", desc: "Busca em padrão xadrez" }
+};
+
+const BS_SIZES = {
+  small: { gridSize: 8, label: "Pequeno", desc: "8×8, 4 navios", ships: [
     { name: "Encouraçado", size: 4, icon: "fa-solid fa-ship" },
     { name: "Cruzador", size: 3, icon: "fa-solid fa-anchor" },
     { name: "Submarino", size: 3, icon: "fa-solid fa-water" },
     { name: "Destroyer", size: 2, icon: "fa-solid fa-location-crosshairs" },
   ]},
-  medium: { gridSize: 10, label: "Médio", description: "Tabuleiro 10×10, 5 navios", ships: [
+  medium: { gridSize: 10, label: "Médio", desc: "10×10, 5 navios", ships: [
     { name: "Porta-aviões", size: 5, icon: "fa-solid fa-jet-fighter" },
     { name: "Encouraçado", size: 4, icon: "fa-solid fa-ship" },
     { name: "Cruzador", size: 3, icon: "fa-solid fa-anchor" },
     { name: "Submarino", size: 3, icon: "fa-solid fa-water" },
     { name: "Destroyer", size: 2, icon: "fa-solid fa-location-crosshairs" },
   ]},
-  hard: { gridSize: 12, label: "Difícil", description: "Tabuleiro 12×12, 7 navios", ships: [
+  large: { gridSize: 12, label: "Grande", desc: "12×12, 7 navios", ships: [
     { name: "Porta-aviões", size: 5, icon: "fa-solid fa-jet-fighter" },
     { name: "Encouraçado", size: 4, icon: "fa-solid fa-ship" },
     { name: "Cruzador", size: 3, icon: "fa-solid fa-anchor" },
@@ -26,33 +32,34 @@ const BS_DIFFICULTIES = {
 
 function Battleship({ onBackToApp }) {
   const [difficulty, setDifficulty] = React.useState(null);
+  const [size, setSize] = React.useState(null);
 
   if (!difficulty) {
     return (
       <div className="game">
         <div className="mode-select">
           <h1>Batalha Naval</h1>
-          <p>Escolha a Dificuldade</p>
+          <p>Escolha a Dificuldade da IA</p>
           <div className="mode-buttons">
             <button className="mode-btn" onClick={() => setDifficulty("easy")}>
               <span className="mode-icon" style={{ color: '#00ff73' }}><i className="fa-solid fa-circle"></i></span>
               <div className="mode-text">
                 <strong>Fácil</strong>
-                <span>Tabuleiro 8×8, 4 navios</span>
+                <span>Tiros aleatórios, sem memória.</span>
               </div>
             </button>
             <button className="mode-btn" onClick={() => setDifficulty("medium")}>
               <span className="mode-icon" style={{ color: '#ffcc00' }}><i className="fa-solid fa-circle"></i></span>
               <div className="mode-text">
                 <strong>Médio</strong>
-                <span>Tabuleiro 10×10, 5 navios</span>
+                <span>Persegue navios após acertar.</span>
               </div>
             </button>
             <button className="mode-btn" onClick={() => setDifficulty("hard")}>
               <span className="mode-icon" style={{ color: '#ff6600' }}><i className="fa-solid fa-circle"></i></span>
               <div className="mode-text">
                 <strong>Difícil</strong>
-                <span>Tabuleiro 12×12, 7 navios</span>
+                <span>Busca em padrão xadrez (Eficiente).</span>
               </div>
             </button>
           </div>
@@ -64,13 +71,51 @@ function Battleship({ onBackToApp }) {
     );
   }
 
-  return <BattleshipGame difficulty={difficulty} onBack={() => setDifficulty(null)} onBackToApp={onBackToApp} />;
+  if (!size) {
+    return (
+      <div className="game">
+        <div className="mode-select">
+          <h1>Batalha Naval</h1>
+          <p>Escolha o Tamanho do Campo</p>
+          <div className="mode-buttons">
+            <button className="mode-btn" onClick={() => setSize("small")}>
+              <span className="mode-icon" style={{ color: '#00f2ff' }}><i className="fa-solid fa-expand"></i></span>
+              <div className="mode-text">
+                <strong>Pequeno</strong>
+                <span>8×8, 4 navios</span>
+              </div>
+            </button>
+            <button className="mode-btn" onClick={() => setSize("medium")}>
+              <span className="mode-icon" style={{ color: '#bc13fe' }}><i className="fa-solid fa-expand"></i></span>
+              <div className="mode-text">
+                <strong>Médio</strong>
+                <span>10×10, 5 navios</span>
+              </div>
+            </button>
+            <button className="mode-btn" onClick={() => setSize("large")}>
+              <span className="mode-icon" style={{ color: '#ff0055' }}><i className="fa-solid fa-expand"></i></span>
+              <div className="mode-text">
+                <strong>Grande</strong>
+                <span>12×12, 7 navios</span>
+              </div>
+            </button>
+          </div>
+          <button className="btn btn-back" style={{ marginTop: "20px" }} onClick={() => setDifficulty(null)}>
+            ← Voltar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <BattleshipGame difficulty={difficulty} size={size} onBack={() => { setDifficulty(null); setSize(null); }} onBackToApp={onBackToApp} />;
 }
 
-function BattleshipGame({ difficulty, onBack, onBackToApp }) {
-  const config = BS_DIFFICULTIES[difficulty];
-  const gridSize = config.gridSize;
-  const ships = config.ships;
+function BattleshipGame({ difficulty, size, onBack, onBackToApp }) {
+  const diffConfig = BS_DIFFICULTIES[difficulty];
+  const sizeConfig = BS_SIZES[size];
+  const gridSize = sizeConfig.gridSize;
+  const ships = sizeConfig.ships;
 
   // Game phases: "placing", "playing", "won", "lost"
   const [phase, setPhase] = React.useState("placing");
@@ -538,7 +583,7 @@ function BattleshipGame({ difficulty, onBack, onBackToApp }) {
 
   return (
     <div className="game bs-game" style={{ maxWidth: gameMaxWidth, width: '95vw' }}>
-      <div className="mode-indicator">Batalha Naval ({config.label})</div>
+      <div className="mode-indicator">Batalha Naval ({diffConfig.label} / {sizeConfig.label})</div>
       <div className={statusClass}>{message}</div>
 
       {(phase === "playing" || phase === "won" || phase === "lost") && (
