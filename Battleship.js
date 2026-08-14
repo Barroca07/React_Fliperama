@@ -272,28 +272,43 @@ function BattleshipGame({ difficulty, onBack, onBackToApp }) {
 
           let target = null;
 
-          // Use queue from previous hits
-          while (mem.queue.length > 0 && target === null) {
-            const candidate = mem.queue.shift();
-            if (candidate.r >= 0 && candidate.r < gridSize &&
-                candidate.c >= 0 && candidate.c < gridSize &&
-                !newPG[candidate.r][candidate.c].isShot) {
-              target = candidate;
+          // Dificuldade Fácil: tiros puramente aleatórios, sem memória.
+          // Dificuldades Médio e Difícil: usam memória de acertos (fila)
+          if (difficulty !== "easy") {
+            while (mem.queue.length > 0 && target === null) {
+              const candidate = mem.queue.shift();
+              if (candidate.r >= 0 && candidate.r < gridSize &&
+                  candidate.c >= 0 && candidate.c < gridSize &&
+                  !newPG[candidate.r][candidate.c].isShot) {
+                target = candidate;
+              }
             }
           }
 
-          // Random shot with checkerboard pattern
+          // Se não tem alvo na fila (ou é dificuldade Fácil)
           if (!target) {
             let attempts = 0;
             while (attempts < 300) {
               const r = Math.floor(Math.random() * gridSize);
               const c = Math.floor(Math.random() * gridSize);
-              if (!newPG[r][c].isShot && (r + c) % 2 === 0) {
-                target = { r, c };
-                break;
+              
+              if (!newPG[r][c].isShot) {
+                // Dificuldade Difícil: usa padrão xadrez para busca mais eficiente
+                if (difficulty === "hard") {
+                  if ((r + c) % 2 === 0) {
+                    target = { r, c };
+                    break;
+                  }
+                } else {
+                  // Fácil e Médio: atira aleatoriamente
+                  target = { r, c };
+                  break;
+                }
               }
               attempts++;
             }
+            
+            // Fallback (caso raro onde o padrão xadrez já está esgotado ou aleatório não encontrou)
             if (!target) {
               for (let r = 0; r < gridSize; r++) {
                 for (let c = 0; c < gridSize; c++) {
