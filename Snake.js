@@ -277,7 +277,7 @@ function Snake({ onBackToApp }) {
   let statusMsg = "Pontos: " + score;
   let statusClass = "status-ms";
   if (status === "lost") {
-    statusMsg = <span><i className="fa-solid fa-skull-crossbones"></i> Fim de Jogo!</span>;
+    statusMsg = <span><i className="fa-solid fa-skull-crossbones"></i> Fim de Jogo! Pontuação: {score}</span>;
     statusClass = "status-x";
   }
 

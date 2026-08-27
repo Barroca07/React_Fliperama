@@ -1,11 +1,58 @@
 // ===== App.js =====
+
+const THEME_COLORS = [
+  { id: 'purple', name: 'Roxo', swatch: 'swatch-purple' },
+  { id: 'black', name: 'Preto', swatch: 'swatch-black' },
+  { id: 'white', name: 'Branco', swatch: 'swatch-white' },
+  { id: 'red', name: 'Vermelho', swatch: 'swatch-red' },
+  { id: 'blue', name: 'Azul', swatch: 'swatch-blue' },
+  { id: 'green', name: 'Verde', swatch: 'swatch-green' },
+  { id: 'pink', name: 'Rosa', swatch: 'swatch-pink' },
+];
+
 function App() {
   const [currentGame, setCurrentGame] = React.useState(null);
-  const [isLightMode, setIsLightMode] = React.useState(false);
+  const [settingsOpen, setSettingsOpen] = React.useState(false);
 
+  // Carrega preferências do localStorage
+  const [themeMode, setThemeMode] = React.useState(() => {
+    return localStorage.getItem('fliperama-theme-mode') || 'dark';
+  });
+  const [themeColor, setThemeColor] = React.useState(() => {
+    return localStorage.getItem('fliperama-theme-color') || 'purple';
+  });
+
+  // Aplica classes de tema no body
   React.useEffect(() => {
-    document.body.classList.toggle("light-mode", isLightMode);
-  }, [isLightMode]);
+    const body = document.body;
+
+    // Remove todas as classes de tema anteriores
+    body.classList.remove('light-mode');
+    THEME_COLORS.forEach(c => body.classList.remove(`theme-${c.id}`));
+
+    // Aplica novas classes
+    if (themeMode === 'light') {
+      body.classList.add('light-mode');
+    }
+    body.classList.add(`theme-${themeColor}`);
+
+    // Salva no localStorage
+    localStorage.setItem('fliperama-theme-mode', themeMode);
+    localStorage.setItem('fliperama-theme-color', themeColor);
+  }, [themeMode, themeColor]);
+
+  // Fecha o painel ao pressionar Escape
+  React.useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') setSettingsOpen(false);
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
+
+  const toggleMode = () => {
+    setThemeMode(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   let content;
   if (currentGame === "tictactoe") {
@@ -59,12 +106,54 @@ function App() {
 
   return (
     <>
+      {/* Botão Engrenagem */}
       <button 
-        className="theme-toggle" 
-        onClick={() => setIsLightMode(!isLightMode)}
+        className={`settings-btn ${settingsOpen ? 'active' : ''}`}
+        onClick={() => setSettingsOpen(!settingsOpen)}
+        title="Configurações de Tema"
       >
-        {isLightMode ? <><i className="fa-solid fa-moon"></i> Escuro</> : <><i className="fa-solid fa-sun"></i> Claro</>}
+        <i className="fa-solid fa-gear"></i>
       </button>
+
+      {/* Overlay para fechar ao clicar fora */}
+      <div 
+        className={`settings-overlay ${settingsOpen ? 'open' : ''}`}
+        onClick={() => setSettingsOpen(false)}
+      />
+
+      {/* Painel de Configurações */}
+      <div className={`settings-panel ${settingsOpen ? 'open' : ''}`}>
+        <div className="settings-panel-title">Configurações</div>
+
+        {/* Toggle Claro/Escuro */}
+        <div className="theme-mode-section">
+          <div className="theme-mode-label">
+            <i className={`fa-solid ${themeMode === 'dark' ? 'fa-moon' : 'fa-sun'}`}></i>
+            {themeMode === 'dark' ? 'Modo Escuro' : 'Modo Claro'}
+          </div>
+          <div 
+            className={`theme-mode-switch ${themeMode === 'light' ? 'light' : ''}`}
+            onClick={toggleMode}
+          />
+        </div>
+
+        {/* Grade de Cores */}
+        <div className="theme-colors-label">Cor do Tema</div>
+        <div className="theme-colors-grid">
+          {THEME_COLORS.map(color => (
+            <button
+              key={color.id}
+              className={`theme-color-option ${themeColor === color.id ? 'active' : ''}`}
+              onClick={() => setThemeColor(color.id)}
+              title={color.name}
+            >
+              <div className={`theme-color-swatch ${color.swatch}`} />
+              <span className="theme-color-name">{color.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {content}
     </>
   );
