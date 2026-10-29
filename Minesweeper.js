@@ -55,10 +55,27 @@ function MinesweeperGame({ difficulty, onBack }) {
   const [flagsPlaced, setFlagsPlaced] = React.useState(0);
   const [isFirstClick, setIsFirstClick] = React.useState(true);
   const [isFlagMode, setIsFlagMode] = React.useState(false); // Mobile flag mode
+  const startTimeRef = React.useRef(null); // Início do cronômetro (primeiro clique)
+  const [elapsedMs, setElapsedMs] = React.useState(0);
 
   React.useEffect(() => {
     initGame();
   }, [difficulty]);
+
+  // Cronômetro visível enquanto joga
+  React.useEffect(() => {
+    if (status !== "playing" || isFirstClick) return;
+    const id = setInterval(() => setElapsedMs(Date.now() - startTimeRef.current), 100);
+    return () => clearInterval(id);
+  }, [status, isFirstClick]);
+
+  // Envia o resultado para o ranking quando a partida termina
+  React.useEffect(() => {
+    if (status === "playing" || !startTimeRef.current) return;
+    const durationMs = Date.now() - startTimeRef.current;
+    setElapsedMs(durationMs);
+    recordGameResult({ game: "minesweeper", mode: difficulty, result: status === "won" ? "win" : "loss", durationMs });
+  }, [status]);
 
   function initGame() {
     // Gerar tabuleiro vazio
@@ -81,6 +98,8 @@ function MinesweeperGame({ difficulty, onBack }) {
     setFlagsPlaced(0);
     setIsFirstClick(true);
     setIsFlagMode(false);
+    startTimeRef.current = null;
+    setElapsedMs(0);
   }
 
   function placeMines(firstR, firstC, currentGrid) {
@@ -129,6 +148,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     if (isFirstClick) {
       placeMines(r, c, newGrid);
       setIsFirstClick(false);
+      startTimeRef.current = Date.now();
     }
 
     if (newGrid[r][c].isMine) {
@@ -231,6 +251,7 @@ function MinesweeperGame({ difficulty, onBack }) {
     <div className="game ms-game-container" style={{ maxWidth: difficulty === "easy" ? '420px' : difficulty === "medium" ? '580px' : '680px', width: '95vw' }}>
       <div className="mode-indicator">Campo Minado ({config.label})</div>
       <div className={`status ${statusClass}`}>{statusMsg}</div>
+      <div className="game-timer"><i className="fa-solid fa-stopwatch"></i> {formatDuration(elapsedMs)}</div>
 
       <div className="flag-mode-toggle" style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
         <button

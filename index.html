@@ -10,16 +10,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="style.css">
+    <!-- Estilos do Fliperama (Modularizados) -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/tictactoe.css">
+    <link rel="stylesheet" href="css/minesweeper.css">
+    <link rel="stylesheet" href="css/snake.css">
+    <link rel="stylesheet" href="css/battleship.css">
+    <link rel="stylesheet" href="css/leaderboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="root"></div>
 
+    <script type="text/babel" src="Supabase.js"></script>
+    <script type="text/babel" src="Leaderboard.js"></script>
     <script type="text/babel" src="TicTacToe.js"></script>
     <script type="text/babel" src="Minesweeper.js"></script>
     <script type="text/babel" src="Snake.js"></script>

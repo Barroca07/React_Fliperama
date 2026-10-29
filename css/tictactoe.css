@@ -1,0 +1,176 @@
+/* ======================================= */
+/* ===== JOGO DA VELHA (Tic-Tac-Toe) ====== */
+/* ======================================= */
+
+/* Tabuleiro */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2), rgba(0, 242, 255, 0.1));
+  padding: 6px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.square {
+  width: 100px;
+  height: 100px;
+  background: var(--surface-color);
+  border: none;
+  font-size: 2.4rem;
+  font-weight: 800;
+  font-family: 'Outfit', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.square:hover:not(.filled) {
+  background: rgba(255, 255, 255, 0.06);
+  transform: scale(1.04);
+}
+
+.square:active {
+  transform: scale(0.96);
+}
+
+.square.filled {
+  cursor: default;
+  animation: popIn 0.25s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.square.x-mark {
+  color: var(--x-color);
+  text-shadow: 0 0 8px var(--x-color), 0 0 20px var(--x-color);
+}
+
+.square.o-mark {
+  color: var(--o-color);
+  text-shadow: 0 0 8px var(--o-color), 0 0 20px var(--o-color);
+}
+
+.square.win-cell {
+  animation: winPulse 1s ease-in-out infinite;
+}
+
+@keyframes winPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* Setup de Jogadores */
+.setup-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  color: #ccc;
+  font-weight: 600;
+}
+
+.name-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.name-input:focus {
+  border-color: var(--neon-border);
+  box-shadow: 0 0 10px rgba(var(--theme-accent-rgb), 0.2);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.symbol-toggle {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #333;
+  background: rgba(255, 255, 255, 0.03);
+  color: #888;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn.active {
+  color: white;
+  border-color: #666;
+}
+
+.toggle-btn.x-active {
+  background: rgba(255, 0, 85, 0.15);
+  border-color: var(--x-color);
+  color: var(--x-color);
+  text-shadow: 0 0 8px var(--x-color);
+}
+
+.toggle-btn.o-active {
+  background: rgba(0, 242, 255, 0.15);
+  border-color: var(--o-color);
+  color: var(--o-color);
+  text-shadow: 0 0 8px var(--o-color);
+}
+
+/* Modo Claro */
+body.light-mode .square {
+  background: #f4f6f8;
+  color: var(--text-color);
+}
+
+body.light-mode .square:hover:not(.filled) {
+  background: #e9ecef;
+}
+
+body.light-mode .square.x-mark,
+body.light-mode .square.o-mark {
+  text-shadow: 0 0 5px currentColor;
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .square {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+}

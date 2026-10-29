@@ -168,7 +168,8 @@ function ModeSelect({ onSelectMode, onBackToApp }) {
 
 // ===== Componente: Setup de Jogadores =====
 function PlayerSetup({ gameMode, onStart, onBack }) {
-  const [player1Name, setPlayer1Name] = React.useState(gameMode === "pvc" ? "Jogador" : "Jogador 1");
+  const auth = useAuth();
+  const [player1Name, setPlayer1Name] = React.useState(auth.nickname || (gameMode === "pvc" ? "Jogador" : "Jogador 1"));
   const [player2Name, setPlayer2Name] = React.useState(gameMode === "pvc" ? "Máquina" : "Jogador 2");
   const [player1Is, setPlayer1Is] = React.useState("X");
 
@@ -248,6 +249,8 @@ function TicTacToe({ onBackToApp }) {
   const [gameStarter, setGameStarter] = React.useState("X");
   const [gameOver, setGameOver] = React.useState(false);
   const [aiThinking, setAiThinking] = React.useState(false);
+  const [p1Symbol, setP1Symbol] = React.useState("X"); // Símbolo do Jogador 1 (usuário logado no ranking)
+  const roundStartRef = React.useRef(Date.now());
 
   // Efeito: IA joga quando é a vez dela
   React.useEffect(() => {
@@ -277,15 +280,28 @@ function TicTacToe({ onBackToApp }) {
   // Efeito: Verificar fim de jogo e atualizar placar
   React.useEffect(() => {
     const winInfo = calculateWinner(squares);
+    const rankingMode = gameMode === "pvp" ? "pvp" : `ia-${difficulty}`;
     if (winInfo) {
       if (!gameOver) {
         setScore((prev) => ({ ...prev, [winInfo.winner]: prev[winInfo.winner] + 1 }));
         setGameOver(true);
+        recordGameResult({
+          game: "tictactoe",
+          mode: rankingMode,
+          result: winInfo.winner === p1Symbol ? "win" : "loss",
+          durationMs: Date.now() - roundStartRef.current,
+        });
       }
     } else if (!squares.includes(null)) {
       if (!gameOver) {
         setScore((prev) => ({ ...prev, draws: prev.draws + 1 }));
         setGameOver(true);
+        recordGameResult({
+          game: "tictactoe",
+          mode: rankingMode,
+          result: "draw",
+          durationMs: Date.now() - roundStartRef.current,
+        });
       }
     }
   }, [squares]);
@@ -298,6 +314,7 @@ function TicTacToe({ onBackToApp }) {
   function resetGame() {
     const nextStarter = gameStarter === "X" ? "O" : "X";
     setGameStarter(nextStarter);
+    roundStartRef.current = Date.now();
     setSquares(Array(9).fill(null));
     setXIsNext(nextStarter === "X");
     setGameOver(false);
@@ -312,6 +329,8 @@ function TicTacToe({ onBackToApp }) {
 
   function handleSetupStart(playersConfig, p1Symbol) {
     setPlayers(playersConfig);
+    setP1Symbol(p1Symbol);
+    roundStartRef.current = Date.now();
     if (gameMode === "pvc") {
       setAiSymbol(p1Symbol === "X" ? "O" : "X");
     }

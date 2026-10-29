@@ -18,7 +18,8 @@ O projeto foi construído utilizando as seguintes tecnologias e componentes:
 
 * **React (JavaScript):** Responsável por toda a lógica de renderização, gerenciamento de ciclo de vida e componentização (`App.js`)[cite: 2].
 * **HTML5:** Estrutura base da aplicação (`index.html`)[cite: 2].
-* **CSS3:** Estilização personalizada de tabuleiros, menus, animações e responsividade (`style.css`)[cite: 2].
+* **CSS3 Modular:** Estilização organizada por jogo e componentes em `/css/` (`global.css`, `tictactoe.css`, `minesweeper.css`, `snake.css`, `battleship.css`, `leaderboard.css`).
+* **Supabase:** Autenticação de jogadores e banco de dados em tempo real para ranking global (`Supabase.js` e `/supabase/`).
 
 ## ⚙️ Como executar localmente
 

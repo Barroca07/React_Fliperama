@@ -1,0 +1,219 @@
+/* ======================================= */
+/* ===== JOGO DA COBRINHA (Snake) ======== */
+/* ======================================= */
+
+.snake-game,
+.snake-setup {
+  max-width: 440px;
+  width: 94vw;
+}
+
+.snake-board-wrap {
+  position: relative;
+  width: 100%;
+  border-radius: 16px;
+  margin-bottom: 14px;
+}
+
+.snake-board {
+  display: grid;
+  grid-template-columns: repeat(15, 1fr);
+  gap: 2px;
+  background:
+    linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.08), rgba(0, 0, 0, 0) 60%),
+    rgba(8, 8, 14, 0.85);
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.25);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5), 0 0 24px rgba(var(--theme-accent-rgb), 0.08);
+  padding: 6px;
+  border-radius: 16px;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+body.light-mode .snake-board {
+  border-color: rgba(0, 0, 0, 0.08);
+  background: #e9ecf1;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.snake-cell {
+  position: relative;
+  background: rgba(255, 255, 255, 0.025);
+  border-radius: 3px;
+  width: 100%;
+  height: 100%;
+}
+
+body.light-mode .snake-cell {
+  background: rgba(0, 0, 0, 0.035);
+}
+
+.snake-body {
+  background: linear-gradient(135deg, #3dffa0, #00c060);
+  box-shadow: 0 0 6px rgba(0, 255, 115, 0.45);
+  border-radius: 4px;
+}
+
+.snake-head {
+  background: linear-gradient(180deg, #7dffbf, #00e068);
+  box-shadow: 0 0 12px rgba(0, 255, 115, 0.8);
+  border-radius: 40% 40% 25% 25%;
+  z-index: 1;
+}
+
+/* Olhos da cobra (rotacionam junto com a direção da cabeça) */
+.snake-head::before,
+.snake-head::after {
+  content: '';
+  position: absolute;
+  top: 22%;
+  width: 22%;
+  height: 22%;
+  background: #0a0a0f;
+  border-radius: 50%;
+  box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.snake-head::before {
+  left: 18%;
+}
+
+.snake-head::after {
+  right: 18%;
+}
+
+.snake-head.snake-dead {
+  background: linear-gradient(180deg, #ff6b8f, #ff0055);
+  box-shadow: 0 0 14px rgba(255, 0, 85, 0.8);
+  animation: snakeShake 0.4s ease;
+}
+
+@keyframes snakeShake {
+
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  25% {
+    translate: -2px 0;
+  }
+
+  75% {
+    translate: 2px 0;
+  }
+}
+
+body.light-mode .snake-body {
+  background: linear-gradient(135deg, #22d17a, #009e4f);
+  box-shadow: none;
+}
+
+body.light-mode .snake-head {
+  background: linear-gradient(180deg, #33e08a, #00a855);
+  box-shadow: 0 2px 6px rgba(0, 140, 70, 0.4);
+}
+
+.snake-apple {
+  background: radial-gradient(circle at 35% 30%, #ff8fab, var(--x-color) 55%);
+  box-shadow: 0 0 10px var(--x-color);
+  border-radius: 50%;
+  animation: pulseApple 0.9s ease-in-out infinite alternate;
+}
+
+/* Folhinha da maçã */
+.snake-apple::after {
+  content: '';
+  position: absolute;
+  top: -12%;
+  left: 50%;
+  width: 34%;
+  height: 26%;
+  background: #00e068;
+  border-radius: 0 80% 0 80%;
+}
+
+@keyframes pulseApple {
+  from {
+    transform: scale(0.85);
+  }
+
+  to {
+    transform: scale(1.05);
+    box-shadow: 0 0 16px var(--x-color);
+  }
+}
+
+/* D-pad: só aparece em telas de toque */
+.snake-dpad {
+  display: none;
+  grid-template-areas:
+    ". up ."
+    "left . right"
+    ". down .";
+  grid-template-columns: repeat(3, 56px);
+  grid-template-rows: repeat(3, 48px);
+  gap: 6px;
+  margin: 4px auto 10px;
+}
+
+.dpad-btn {
+  border-radius: 14px;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+  background: rgba(var(--theme-accent-rgb), 0.1);
+  color: var(--text-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dpad-btn:active {
+  transform: scale(0.92);
+  background: rgba(var(--theme-accent-rgb), 0.3);
+}
+
+.dpad-up {
+  grid-area: up;
+}
+
+.dpad-down {
+  grid-area: down;
+}
+
+.dpad-left {
+  grid-area: left;
+}
+
+.dpad-right {
+  grid-area: right;
+}
+
+.snake-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #888;
+}
+
+.snake-hint kbd {
+  margin: 0 1px;
+}
+
+.snake-hint-sep {
+  margin: 0 6px;
+  opacity: 0.5;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .snake-dpad {
+    display: grid;
+  }
+
+  .snake-hint {
+    display: none;
+  }
+}

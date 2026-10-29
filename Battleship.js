@@ -134,6 +134,24 @@ function BattleshipGame({ difficulty, size, onBack, onBackToApp }) {
   const [aiMemory, setAiMemory] = React.useState({ hits: [], queue: [] });
   const [lastEnemyShot, setLastEnemyShot] = React.useState(null);
   const [animatingShot, setAnimatingShot] = React.useState(false);
+  const startTimeRef = React.useRef(null);
+  const [elapsedMs, setElapsedMs] = React.useState(0);
+
+  // Cronômetro visível durante a batalha
+  React.useEffect(() => {
+    if (phase !== "playing") return;
+    const id = setInterval(() => setElapsedMs(Date.now() - startTimeRef.current), 100);
+    return () => clearInterval(id);
+  }, [phase]);
+
+  // Envia o resultado para o ranking quando a batalha termina
+  React.useEffect(() => {
+    if ((phase !== "won" && phase !== "lost") || !startTimeRef.current) return;
+    const durationMs = Date.now() - startTimeRef.current;
+    setElapsedMs(durationMs);
+    recordGameResult({ game: "battleship", mode: `${difficulty}-${size}`, result: phase === "won" ? "win" : "loss", durationMs });
+    startTimeRef.current = null;
+  }, [phase]);
 
   // ===== Grid Helpers =====
   function bsCreateEmptyGrid(size) {
@@ -249,6 +267,8 @@ function BattleshipGame({ difficulty, size, onBack, onBackToApp }) {
     const enemyResult = placeShipsRandomly(bsCreateEmptyGrid(gridSize));
     setEnemyGrid(enemyResult.grid);
     setEnemyShips(enemyResult.ships);
+    startTimeRef.current = Date.now();
+    setElapsedMs(0);
     setPhase("playing");
     setIsPlayerTurn(true);
     setMessage("Seu turno! Clique no campo inimigo para atacar");
@@ -442,6 +462,8 @@ function BattleshipGame({ difficulty, size, onBack, onBackToApp }) {
 
   // ===== Reset Game =====
   function resetGame() {
+    startTimeRef.current = null;
+    setElapsedMs(0);
     setPhase("placing");
     setPlayerGrid(bsCreateEmptyGrid(gridSize));
     setEnemyGrid(bsCreateEmptyGrid(gridSize));
@@ -595,6 +617,10 @@ function BattleshipGame({ difficulty, size, onBack, onBackToApp }) {
           <div className="score-item x-score">
             <span className="score-label">Navios inimigos</span>
             <span className="score-value">{ships.length - enemySunkCount}/{ships.length}</span>
+          </div>
+          <div className="score-item draw-score">
+            <span className="score-label">Tempo</span>
+            <span className="score-value">{formatDuration(elapsedMs)}</span>
           </div>
         </div>
       )}

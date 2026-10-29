@@ -1,0 +1,421 @@
+/* ======================================= */
+/* ===== BATALHA NAVAL (Battleship) ====== */
+/* ======================================= */
+
+.bs-game {
+  padding: 28px 24px;
+}
+
+.bs-boards {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.bs-grid-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+}
+
+.bs-grid-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #aaa;
+  text-align: center;
+}
+
+.bs-grid-container {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, rgba(0, 100, 180, 0.15), rgba(0, 200, 255, 0.08));
+  padding: 4px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 180, 255, 0.2);
+  width: 100%;
+}
+
+.bs-grid-header {
+  display: flex;
+}
+
+.bs-grid-corner {
+  width: 24px;
+  min-width: 24px;
+}
+
+.bs-grid-col-label {
+  flex: 1;
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #666;
+  padding: 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.bs-grid-row {
+  display: flex;
+}
+
+.bs-grid-row-label {
+  width: 24px;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #666;
+  letter-spacing: 0.5px;
+}
+
+.bs-cell {
+  flex: 1;
+  aspect-ratio: 1;
+  min-width: 0;
+  min-height: 0;
+  background: rgba(10, 30, 60, 0.85);
+  border: 1px solid rgba(0, 150, 255, 0.1);
+  border-radius: 3px;
+  margin: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: clamp(8px, 1.8vw, 14px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-family: 'Outfit', sans-serif;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ship cell */
+.bs-cell-ship {
+  background: rgba(0, 180, 255, 0.25);
+  border-color: rgba(0, 180, 255, 0.35);
+  box-shadow: inset 0 0 6px rgba(0, 180, 255, 0.15);
+}
+
+/* Hover during placement */
+.bs-cell-hover-valid {
+  background: rgba(0, 255, 115, 0.35) !important;
+  border-color: rgba(0, 255, 115, 0.6) !important;
+  box-shadow: 0 0 8px rgba(0, 255, 115, 0.3);
+}
+
+.bs-cell-hover-invalid {
+  background: rgba(255, 0, 85, 0.35) !important;
+  border-color: rgba(255, 0, 85, 0.6) !important;
+  box-shadow: 0 0 8px rgba(255, 0, 85, 0.3);
+}
+
+/* Target cell (hoverable enemy cells) */
+.bs-cell-target:hover {
+  background: rgba(var(--theme-accent-rgb), 0.3);
+  border-color: rgba(var(--theme-accent-rgb), 0.6);
+  box-shadow: 0 0 10px rgba(var(--theme-accent-rgb), 0.3);
+  transform: scale(1.1);
+  z-index: 2;
+}
+
+/* Hit cell */
+.bs-cell-hit {
+  background: rgba(255, 80, 0, 0.4) !important;
+  border-color: rgba(255, 80, 0, 0.6) !important;
+  color: #ff5500;
+  text-shadow: 0 0 8px rgba(255, 80, 0, 0.8);
+  box-shadow: inset 0 0 10px rgba(255, 80, 0, 0.2);
+  cursor: default;
+  animation: bsHitPop 0.4s ease-out;
+}
+
+@keyframes bsHitPop {
+  0% { transform: scale(0.6); opacity: 0; }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Miss cell */
+.bs-cell-miss {
+  background: rgba(30, 50, 80, 0.5) !important;
+  border-color: rgba(100, 150, 200, 0.15) !important;
+  color: rgba(100, 180, 255, 0.5);
+  cursor: default;
+  animation: bsMissSplash 0.3s ease-out;
+}
+
+@keyframes bsMissSplash {
+  0% { transform: scale(0.8); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Sunk cell */
+.bs-cell-sunk {
+  background: rgba(255, 0, 85, 0.3) !important;
+  border-color: rgba(255, 0, 85, 0.5) !important;
+  color: var(--x-color);
+  text-shadow: 0 0 8px var(--x-color);
+  animation: bsSunkPulse 2s ease-in-out infinite;
+}
+
+@keyframes bsSunkPulse {
+  0%, 100% { box-shadow: inset 0 0 8px rgba(255, 0, 85, 0.2); }
+  50% { box-shadow: inset 0 0 16px rgba(255, 0, 85, 0.4); }
+}
+
+/* Last enemy shot indicator */
+.bs-cell-last-shot {
+  box-shadow: 0 0 12px rgba(255, 204, 0, 0.6), 0 0 4px rgba(255, 204, 0, 0.8) !important;
+  border-color: rgba(255, 204, 0, 0.7) !important;
+}
+
+/* Placement phase */
+.bs-placement {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.bs-placement-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.bs-current-ship {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  color: var(--o-color);
+}
+
+.bs-current-ship i {
+  font-size: 1.2rem;
+  filter: drop-shadow(0 0 6px var(--o-color));
+}
+
+.bs-current-ship strong {
+  color: var(--text-color);
+}
+
+.bs-current-ship span {
+  color: #888;
+  font-size: 0.8rem;
+}
+
+/* Ship status indicators */
+.bs-ship-statuses {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.bs-ship-status {
+  flex: 1;
+  min-width: 250px;
+}
+
+.bs-ship-status-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #666;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.bs-ship-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bs-ship-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  transition: all 0.3s ease;
+}
+
+.bs-ship-item i {
+  font-size: 0.85rem;
+  color: var(--o-color);
+  min-width: 18px;
+  text-align: center;
+}
+
+.bs-ship-sunk {
+  opacity: 0.4;
+  text-decoration: line-through;
+  border-color: rgba(255, 0, 85, 0.2);
+}
+
+.bs-ship-sunk i {
+  color: var(--x-color);
+}
+
+.bs-ship-name {
+  flex: 1;
+  color: #ccc;
+  font-weight: 600;
+}
+
+.bs-ship-health {
+  display: flex;
+  gap: 3px;
+}
+
+.bs-health-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(0, 242, 255, 0.4);
+  border: 1px solid rgba(0, 242, 255, 0.5);
+  transition: all 0.3s ease;
+}
+
+.bs-health-hit {
+  background: rgba(255, 0, 85, 0.6);
+  border-color: var(--x-color);
+  box-shadow: 0 0 6px rgba(255, 0, 85, 0.4);
+}
+
+/* Modo Claro */
+body.light-mode .bs-grid-container {
+  background: linear-gradient(135deg, rgba(0, 100, 180, 0.08), rgba(0, 200, 255, 0.04));
+  border-color: rgba(0, 100, 180, 0.15);
+}
+
+body.light-mode .bs-cell {
+  background: #e8eef5;
+  border-color: rgba(0, 100, 180, 0.1);
+}
+
+body.light-mode .bs-cell-ship {
+  background: rgba(0, 136, 204, 0.2);
+  border-color: rgba(0, 136, 204, 0.3);
+}
+
+body.light-mode .bs-cell-target:hover {
+  background: rgba(155, 32, 212, 0.15);
+  border-color: rgba(155, 32, 212, 0.4);
+}
+
+body.light-mode .bs-cell-hit {
+  background: rgba(255, 80, 0, 0.2) !important;
+  border-color: rgba(255, 80, 0, 0.4) !important;
+}
+
+body.light-mode .bs-cell-miss {
+  background: rgba(200, 215, 230, 0.6) !important;
+  border-color: rgba(0, 100, 180, 0.1) !important;
+  color: rgba(0, 100, 180, 0.4);
+}
+
+body.light-mode .bs-cell-sunk {
+  background: rgba(230, 0, 76, 0.15) !important;
+  border-color: rgba(230, 0, 76, 0.3) !important;
+}
+
+body.light-mode .bs-ship-item {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: #eee;
+}
+
+body.light-mode .bs-ship-name {
+  color: #555;
+}
+
+body.light-mode .bs-health-dot {
+  background: rgba(0, 136, 204, 0.3);
+  border-color: rgba(0, 136, 204, 0.4);
+}
+
+body.light-mode .bs-health-hit {
+  background: rgba(230, 0, 76, 0.5);
+  border-color: var(--x-color);
+}
+
+body.light-mode .bs-grid-label {
+  color: #666;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .bs-boards {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .bs-grid-wrapper {
+    max-width: 360px;
+    width: 100%;
+  }
+
+  .bs-game {
+    padding: 20px 14px;
+  }
+
+  .bs-ship-statuses {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .bs-ship-status {
+    min-width: unset;
+  }
+}
+
+@media (max-width: 480px) {
+  .bs-grid-corner,
+  .bs-grid-row-label {
+    width: 18px;
+    min-width: 18px;
+    font-size: 0.55rem;
+  }
+
+  .bs-grid-col-label {
+    font-size: 0.55rem;
+  }
+
+  .bs-cell {
+    font-size: clamp(6px, 1.5vw, 10px);
+    margin: 0.5px;
+  }
+
+  .bs-placement-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
