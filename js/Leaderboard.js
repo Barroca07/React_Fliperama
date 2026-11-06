@@ -7,6 +7,8 @@ const LB_GAMES = [
   { id: "minesweeper", label: "Campo Minado", icon: "fa-solid fa-bomb" },
   { id: "snake", label: "Cobrinha", icon: "fa-solid fa-staff-snake" },
   { id: "battleship", label: "Batalha Naval", icon: "fa-solid fa-ship" },
+  { id: "geometrydash", label: "Geometry Dash", icon: "fa-solid fa-cube" },
+  { id: "tetris", label: "Tetris", icon: "fa-solid fa-shapes" },
 ];
 
 const LB_MODES = {
@@ -34,6 +36,16 @@ const LB_MODES = {
       label: `${{ easy: "Fácil", medium: "Médio", hard: "Difícil" }[d]} / ${{ small: "Pequeno", medium: "Médio", large: "Grande" }[s]}`,
     }))
   ),
+  geometrydash: [
+    { id: "easy", label: "Fácil" },
+    { id: "medium", label: "Médio" },
+    { id: "hard", label: "Difícil" },
+  ],
+  tetris: [
+    { id: "easy", label: "Fácil" },
+    { id: "medium", label: "Médio" },
+    { id: "hard", label: "Difícil" },
+  ],
 };
 
 // ===== Modal de Login / Cadastro =====
@@ -225,7 +237,7 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
     return () => { cancelled = true; };
   }, [game, mode]);
 
-  const isSnake = game === "snake";
+  const isSnake = SCORE_GAMES.includes(game);
   const isGlobal = game === "all";
   const medals = ["🥇", "🥈", "🥉"];
 
@@ -374,7 +386,7 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
   }, [open, game, reloadKey, auth.user]);
 
   const medals = ["🥇", "🥈", "🥉"];
-  const isSnake = game === "snake";
+  const isSnake = SCORE_GAMES.includes(game);
   const isGlobal = game === "all";
 
   return (
@@ -419,6 +431,8 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
           { id: "minesweeper", label: "Campo Minado", short: "Minas", icon: "fa-solid fa-bomb" },
           { id: "snake", label: "Cobrinha", short: "Cobra", icon: "fa-solid fa-staff-snake" },
           { id: "battleship", label: "Batalha Naval", short: "Naval", icon: "fa-solid fa-ship" },
+          { id: "geometrydash", label: "Geometry Dash", short: "Dash", icon: "fa-solid fa-cube" },
+          { id: "tetris", label: "Tetris", short: "Tetris", icon: "fa-solid fa-shapes" },
         ].map((g) => (
           <button
             key={g.id}

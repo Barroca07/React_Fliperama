@@ -7,8 +7,10 @@
    - css/tictactoe.css   -> Estilos específicos do Jogo da Velha (tabuleiro, símbolos, setup)
    - css/minesweeper.css -> Estilos específicos do Campo Minado (grid, células, animações)
    - css/snake.css       -> Estilos específicos do Jogo da Cobrinha (arena, cobra, maçã)
-   - css/battleship.css  -> Estilos específicos da Batalha Naval (dois tabuleiros, navios, radar)
-   - css/leaderboard.css -> Estilos de ranking, autenticação (Supabase), toasts e preview
+   - css/battleship.css   -> Estilos específicos da Batalha Naval (dois tabuleiros, navios, radar)
+   - css/geometrydash.css -> Estilos específicos do Geometry Dash (canvas, personalização, cenários)
+   - css/tetris.css       -> Estilos específicos do Tetris (grade 10x20, painel lateral, controles)
+   - css/leaderboard.css  -> Estilos de ranking, autenticação (Supabase), toasts e preview
 */
 
 @import url('./css/global.css');
@@ -16,4 +18,6 @@
 @import url('./css/minesweeper.css');
 @import url('./css/snake.css');
 @import url('./css/battleship.css');
+@import url('./css/geometrydash.css');
+@import url('./css/tetris.css');
 @import url('./css/leaderboard.css');

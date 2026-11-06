@@ -44,6 +44,22 @@ const HOME_GAMES = [
     color: '#33bbff',
     tags: ['Estratégia', 'vs IA'],
   },
+  {
+    id: 'geometrydash',
+    title: 'Geometry Dash',
+    desc: 'Pule no ritmo e desvie dos espinhos. Personalize seu cubo!',
+    icon: 'fa-solid fa-cube',
+    color: '#ffcc00',
+    tags: ['Reflexo', 'Personalizável'],
+  },
+  {
+    id: 'tetris',
+    title: 'Tetris',
+    desc: 'Encaixe as peças, complete linhas e faça pontos.',
+    icon: 'fa-solid fa-shapes',
+    color: '#bc13fe',
+    tags: ['Raciocínio', 'Recorde'],
+  },
 ];
 
 function App() {
@@ -123,6 +139,10 @@ function App() {
     content = <Snake onBackToApp={goHome} />;
   } else if (currentGame === "battleship") {
     content = <Battleship onBackToApp={goHome} />;
+  } else if (currentGame === "geometrydash") {
+    content = <GeometryDash onBackToApp={goHome} />;
+  } else if (currentGame === "tetris") {
+    content = <Tetris onBackToApp={goHome} />;
   } else if (currentGame === "leaderboard") {
     content = <Leaderboard onBackToApp={goHome} onOpenAuth={() => setAuthOpen(true)} />;
   } else {

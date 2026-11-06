@@ -33,7 +33,7 @@ create table if not exists public.game_results (
   user_id      uuid not null default auth.uid()
                references public.profiles (id) on delete cascade,
   game         text not null
-               check (game in ('tictactoe', 'minesweeper', 'snake', 'battleship')),
+               check (game in ('tictactoe', 'minesweeper', 'snake', 'battleship', 'geometrydash', 'tetris')),
   mode         text not null default 'default' check (char_length(mode) <= 40),
   result       text not null check (result in ('win', 'loss', 'draw')),
   duration_ms  integer check (duration_ms is null or (duration_ms >= 0 and duration_ms < 86400000)),

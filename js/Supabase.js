@@ -9,6 +9,9 @@ const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_Rzr8wVcbeM3B0pbTDOxGYg_sB7JQo6E
 const NICKNAME_EMAIL_DOMAIN = "fliperama.app";
 const NICKNAME_REGEX = /^[A-Za-z0-9_]{3,15}$/;
 
+// Jogos cujo ranking é por maior pontuação (e não por vitórias)
+const SCORE_GAMES = ["snake", "geometrydash", "tetris"];
+
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true },
 });
@@ -144,7 +147,7 @@ function useAuth() {
 async function recordGameResult({ game, mode, result, durationMs = null, score = null }) {
   const { user } = FliperamaAuth.getState();
   if (!user) {
-    if (result === "win" || game === "snake") {
+    if (result === "win" || SCORE_GAMES.includes(game)) {
       showToast("Entre com seu apelido para aparecer no ranking!", "info");
     }
     return null;
@@ -174,7 +177,7 @@ async function recordGameResult({ game, mode, result, durationMs = null, score =
   }
 
   if (result === "win") showToast(`Vitória registrada no ranking! (${formatDuration(durationMs)})`, "success");
-  else if (game === "snake") showToast(`Pontuação ${score} registrada no ranking!`, "success");
+  else if (SCORE_GAMES.includes(game)) showToast(`Pontuação ${score} registrada no ranking!`, "success");
   return true;
 }
 
@@ -192,7 +195,7 @@ async function fetchLeaderboard({ game = "all", mode = "all", limit = 50 }) {
     query = sbClient.from(view).select("*").eq("game", game);
     if (mode !== "all") query = query.eq("mode", mode);
 
-    if (game === "snake") {
+    if (SCORE_GAMES.includes(game)) {
       query = query.order("best_score", { ascending: false, nullsFirst: false });
     } else {
       query = query
