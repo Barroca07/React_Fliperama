@@ -376,12 +376,11 @@ body.light-mode .auth-modal {
 
 .lb-tabs {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
   width: 100%;
-  overflow-x: auto;
-  padding-bottom: 4px;
   margin-bottom: 14px;
-  scrollbar-width: thin;
 }
 
 .lb-tab {
@@ -712,35 +711,30 @@ body.light-mode .lb-preview-item {
 /* Tabs do Preview */
 .lb-preview-tabs {
   display: flex;
-  gap: 4px;
+  flex-wrap: wrap;
+  gap: 6px;
   background: rgba(0, 0, 0, 0.25);
-  padding: 4px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.lb-preview-tabs::-webkit-scrollbar {
-  display: none;
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .lb-preview-tab {
-  flex: 1;
-  min-width: 0;
-  padding: 6px 6px;
+  flex: 1 1 calc(25% - 6px);
+  min-width: max-content;
+  padding: 7px 10px;
   border: none;
   background: transparent;
   color: #888;
-  border-radius: 8px;
+  border-radius: 9px;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.72rem;
+  font-size: 0.76rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
@@ -917,6 +911,10 @@ body.light-mode .lb-preview-item {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.lb-preview-score-alt {
+  color: #ffcc00;
 }
 
 .lb-preview-time {

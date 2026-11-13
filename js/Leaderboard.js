@@ -237,7 +237,7 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
     return () => { cancelled = true; };
   }, [game, mode]);
 
-  const isSnake = SCORE_GAMES.includes(game);
+  const isScoreGame = SCORE_GAMES.includes(game);
   const isGlobal = game === "all";
   const medals = ["🥇", "🥈", "🥉"];
 
@@ -248,7 +248,7 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
         <h1 className="lb-title">Ranking</h1>
         <p className="lb-subtitle">
           {isGlobal ? "Total de vitórias em todos os jogos"
-            : isSnake ? "Maior pontuação"
+            : isScoreGame ? "Maior pontuação"
             : "Mais vitórias • desempate pelo menor tempo"}
         </p>
       </div>
@@ -293,7 +293,7 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
               <tr>
                 <th>#</th>
                 <th>Jogador</th>
-                {isSnake ? (
+                {isScoreGame ? (
                   <>
                     <th>Recorde</th>
                     <th>Partidas</th>
@@ -318,9 +318,12 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
                       <span className="user-avatar small">{r.nickname.charAt(0).toUpperCase()}</span>
                       {r.nickname}{isMe && <span className="lb-you">você</span>}
                     </td>
-                    {isSnake ? (
+                    {isScoreGame ? (
                       <>
-                        <td className="lb-strong">{r.best_score ?? 0}</td>
+                        <td className="lb-strong">
+                          {game === "snake" && <i className="fa-solid fa-apple-whole" style={{ color: "#ff0055", marginRight: "5px" }}></i>}
+                          {r.best_score ?? 0}{game === "geometrydash" ? " m" : ""}
+                        </td>
                         <td>{r.games_played}</td>
                       </>
                     ) : (
@@ -386,8 +389,13 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
   }, [open, game, reloadKey, auth.user]);
 
   const medals = ["🥇", "🥈", "🥉"];
-  const isSnake = SCORE_GAMES.includes(game);
+  const isScoreGame = SCORE_GAMES.includes(game);
   const isGlobal = game === "all";
+  const scoreIcons = {
+    snake: "fa-solid fa-apple-whole",
+    geometrydash: "fa-solid fa-bolt",
+    tetris: "fa-solid fa-star",
+  };
 
   return (
     <aside
@@ -494,15 +502,16 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
                       {isMe && <span className="lb-you">você</span>}
                     </span>
                     <span className="lb-preview-detail">
-                      {isSnake
+                      {isScoreGame
                         ? `${r.games_played || 1} partida${(r.games_played || 1) > 1 ? "s" : ""}`
                         : `${r.games_played || 0} jogos • ${(r.wins && r.games_played) ? Math.round((r.wins / r.games_played) * 100) : 0}% vit.`}
                     </span>
                   </div>
                   <div className="lb-preview-stat">
-                    {isSnake ? (
-                      <span className="lb-preview-score">
-                        <i className="fa-solid fa-apple-whole"></i> {r.best_score ?? 0}
+                    {isScoreGame ? (
+                      <span className={`lb-preview-score ${game !== "snake" ? "lb-preview-score-alt" : ""}`}>
+                        <i className={scoreIcons[game] || "fa-solid fa-star"}></i>{" "}
+                        {r.best_score ?? 0}{game === "geometrydash" ? " m" : ""}
                       </span>
                     ) : (
                       <>
