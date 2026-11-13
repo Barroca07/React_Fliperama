@@ -374,6 +374,109 @@ body.light-mode .auth-modal {
   margin-top: 4px;
 }
 
+/* --- Navegação entre semanas --- */
+.lb-week-nav {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-bottom: 14px;
+  border-radius: 16px;
+  background: rgba(var(--theme-accent-rgb), 0.06);
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.2);
+}
+
+.lb-week-btn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.35);
+  background: rgba(var(--theme-accent-rgb), 0.1);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lb-week-btn:hover:not(:disabled) {
+  background: var(--neon-border);
+  color: #fff;
+  box-shadow: 0 0 12px var(--neon-glow);
+}
+
+.lb-week-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.lb-week-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.lb-week-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #999;
+}
+
+.lb-week-badge.live {
+  color: #00ff73;
+}
+
+.lb-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #00ff73;
+  box-shadow: 0 0 8px #00ff73;
+  animation: lbLivePulse 1.4s ease-in-out infinite;
+}
+
+@keyframes lbLivePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.75); }
+}
+
+.lb-week-select {
+  max-width: 100%;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface-color);
+  color: var(--text-color);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+}
+
+.lb-week-select:focus {
+  border-color: var(--neon-border);
+}
+
+.lb-week-reset {
+  font-size: 0.72rem;
+  color: var(--draw-color);
+  font-weight: 600;
+}
+
+body.light-mode .lb-week-select {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
 .lb-tabs {
   display: flex;
   flex-wrap: wrap;

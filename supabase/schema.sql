@@ -103,13 +103,22 @@ create trigger on_auth_user_created
   for each row execute function public.handle_new_user();
 
 -- ---------------------------------------------------------------------
--- 5) VIEWS DE RANKING
+-- 5) VIEWS DE RANKING SEMANAL (reinicia toda segunda, horário de Brasília)
 -- ---------------------------------------------------------------------
 
--- 5a) Por jogo + modo (dificuldade/tamanho) — vitórias e menor tempo
-create or replace view public.leaderboard
+drop view if exists public.leaderboard cascade;
+drop view if exists public.leaderboard_game cascade;
+drop view if exists public.leaderboard_global cascade;
+drop view if exists public.leaderboard_weeks cascade;
+
+-- Índice para acelerar o filtro por data
+create index if not exists game_results_created_at_idx on public.game_results (created_at);
+
+-- Por semana + jogo + modo
+create view public.leaderboard
 with (security_invoker = on) as
 select
+  (date_trunc('week', r.created_at at time zone 'America/Sao_Paulo'))::date as week_start,
   r.game,
   r.mode,
   r.user_id,
@@ -122,12 +131,13 @@ select
   max(r.score)                                               as best_score
 from public.game_results r
 join public.profiles p on p.id = r.user_id
-group by r.game, r.mode, r.user_id, p.nickname;
+group by 1, r.game, r.mode, r.user_id, p.nickname;
 
--- 5b) Por jogo (todos os modos somados)
-create or replace view public.leaderboard_game
+-- Por semana + jogo (todos os modos)
+create view public.leaderboard_game
 with (security_invoker = on) as
 select
+  (date_trunc('week', r.created_at at time zone 'America/Sao_Paulo'))::date as week_start,
   r.game,
   r.user_id,
   p.nickname,
@@ -139,12 +149,13 @@ select
   max(r.score)                                               as best_score
 from public.game_results r
 join public.profiles p on p.id = r.user_id
-group by r.game, r.user_id, p.nickname;
+group by 1, r.game, r.user_id, p.nickname;
 
--- 5c) Geral (todos os jogos)
-create or replace view public.leaderboard_global
+-- Por semana, geral (todos os jogos)
+create view public.leaderboard_global
 with (security_invoker = on) as
 select
+  (date_trunc('week', r.created_at at time zone 'America/Sao_Paulo'))::date as week_start,
   r.user_id,
   p.nickname,
   count(*) filter (where r.result = 'win')                   as wins,
@@ -154,7 +165,16 @@ select
   count(distinct r.game) filter (where r.result = 'win')     as games_won_in
 from public.game_results r
 join public.profiles p on p.id = r.user_id
-group by r.user_id, p.nickname;
+group by 1, r.user_id, p.nickname;
 
-grant select on public.leaderboard, public.leaderboard_game, public.leaderboard_global
+-- Lista das semanas que tiveram partidas (para o histórico)
+create view public.leaderboard_weeks
+with (security_invoker = on) as
+select
+  (date_trunc('week', created_at at time zone 'America/Sao_Paulo'))::date as week_start,
+  count(*) as games_played
+from public.game_results
+group by 1;
+
+grant select on public.leaderboard, public.leaderboard_game, public.leaderboard_global, public.leaderboard_weeks
   to anon, authenticated;

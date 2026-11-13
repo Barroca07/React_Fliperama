@@ -181,18 +181,70 @@ async function recordGameResult({ game, mode, result, durationMs = null, score =
   return true;
 }
 
+// ===== Semanas do ranking (segunda a domingo, horário de Brasília) =====
+const RANK_TIMEZONE = "America/Sao_Paulo";
+
+function toISODate(d) {
+  return d.toISOString().slice(0, 10);
+}
+
+// Segunda-feira da semana atual no fuso de Brasília, formato YYYY-MM-DD
+function currentWeekStart() {
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: RANK_TIMEZONE }).format(new Date());
+  const d = new Date(`${today}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+  return toISODate(d);
+}
+
+// "10/11 – 16/11"
+function formatWeekRange(weekStart) {
+  const start = new Date(`${weekStart}T00:00:00Z`);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+  const fmt = (d) => `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  return `${fmt(start)} – ${fmt(end)}`;
+}
+
+// Texto "reinicia em 2d 5h" até a próxima segunda 00:00 (Brasília, UTC-3)
+function timeUntilWeekReset() {
+  const next = new Date(`${currentWeekStart()}T03:00:00Z`);
+  next.setUTCDate(next.getUTCDate() + 7);
+  const ms = Math.max(0, next - new Date());
+  const days = Math.floor(ms / 86400000);
+  const hours = Math.floor((ms % 86400000) / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${mins}min`;
+  return `${mins}min`;
+}
+
+// Lista de semanas com partidas (mais recente primeiro), sempre incluindo a atual
+async function fetchLeaderboardWeeks() {
+  const current = currentWeekStart();
+  const { data, error } = await sbClient
+    .from("leaderboard_weeks")
+    .select("week_start")
+    .order("week_start", { ascending: false })
+    .limit(52);
+  if (error) throw error;
+  const weeks = (data || []).map((w) => w.week_start).filter((w) => w <= current);
+  if (!weeks.includes(current)) weeks.unshift(current);
+  return weeks;
+}
+
 // ===== Consultas de ranking =====
-async function fetchLeaderboard({ game = "all", mode = "all", limit = 50 }) {
+async function fetchLeaderboard({ game = "all", mode = "all", limit = 50, week = currentWeekStart() }) {
   let query;
   if (game === "all") {
     query = sbClient
       .from("leaderboard_global")
       .select("*")
+      .eq("week_start", week)
       .order("wins", { ascending: false })
       .order("games_played", { ascending: true });
   } else {
     const view = mode === "all" ? "leaderboard_game" : "leaderboard";
-    query = sbClient.from(view).select("*").eq("game", game);
+    query = sbClient.from(view).select("*").eq("week_start", week).eq("game", game);
     if (mode !== "all") query = query.eq("mode", mode);
 
     if (SCORE_GAMES.includes(game)) {
@@ -219,4 +271,4 @@ function formatDuration(ms) {
   return `${m}m ${String(s).padStart(2, "0")}s`;
 }
 
-window.FliperamaDB = { sbClient, FliperamaAuth, recordGameResult, fetchLeaderboard, formatDuration, showToast };
+window.FliperamaDB = { sbClient, FliperamaAuth, recordGameResult, fetchLeaderboard, fetchLeaderboardWeeks, currentWeekStart, formatWeekRange, timeUntilWeekReset, formatDuration, showToast };

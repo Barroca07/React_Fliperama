@@ -223,19 +223,31 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
   const [rows, setRows] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState("");
+  const [weeks, setWeeks] = React.useState(() => [currentWeekStart()]);
+  const [weekIdx, setWeekIdx] = React.useState(0); // 0 = semana atual
+
+  const week = weeks[weekIdx] || currentWeekStart();
+  const isCurrentWeek = weekIdx === 0;
 
   React.useEffect(() => { setMode("all"); }, [game]);
+
+  // Carrega a lista de semanas com partidas (histórico)
+  React.useEffect(() => {
+    fetchLeaderboardWeeks()
+      .then((list) => setWeeks(list))
+      .catch((err) => console.warn("[Leaderboard] semanas:", err));
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError("");
-    fetchLeaderboard({ game, mode })
+    fetchLeaderboard({ game, mode, week })
       .then((data) => { if (!cancelled) setRows(data); })
-      .catch((err) => { if (!cancelled) { console.error(err); setError("Não foi possível carregar o ranking. Verifique se o schema.sql foi executado no Supabase."); } })
+      .catch((err) => { if (!cancelled) { console.error(err); setError("Não foi possível carregar o ranking. Execute o weekly_ranking.sql no Supabase."); } })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [game, mode]);
+  }, [game, mode, week]);
 
   const isScoreGame = SCORE_GAMES.includes(game);
   const isGlobal = game === "all";
@@ -251,6 +263,52 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
             : isScoreGame ? "Maior pontuação"
             : "Mais vitórias • desempate pelo menor tempo"}
         </p>
+      </div>
+
+      {/* Navegação entre semanas (histórico) */}
+      <div className="lb-week-nav">
+        <button
+          id="lb-week-prev"
+          className="lb-week-btn"
+          title="Semana anterior"
+          disabled={weekIdx >= weeks.length - 1}
+          onClick={() => setWeekIdx((i) => Math.min(weeks.length - 1, i + 1))}
+        >
+          <i className="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <div className="lb-week-info">
+          <span className={`lb-week-badge ${isCurrentWeek ? "live" : ""}`}>
+            {isCurrentWeek ? <><span className="lb-live-dot"></span> Semana atual</> : <><i className="fa-solid fa-clock-rotate-left"></i> Histórico</>}
+          </span>
+          <select
+            id="lb-week-select"
+            className="lb-week-select"
+            value={weekIdx}
+            onChange={(e) => setWeekIdx(Number(e.target.value))}
+          >
+            {weeks.map((w, i) => (
+              <option key={w} value={i}>
+                {i === 0 ? `Esta semana (${formatWeekRange(w)})` : formatWeekRange(w)}
+              </option>
+            ))}
+          </select>
+          {isCurrentWeek && (
+            <span className="lb-week-reset">
+              <i className="fa-solid fa-hourglass-half"></i> Reinicia em {timeUntilWeekReset()}
+            </span>
+          )}
+        </div>
+
+        <button
+          id="lb-week-next"
+          className="lb-week-btn"
+          title="Próxima semana"
+          disabled={isCurrentWeek}
+          onClick={() => setWeekIdx((i) => Math.max(0, i - 1))}
+        >
+          <i className="fa-solid fa-chevron-right"></i>
+        </button>
       </div>
 
       <div className="lb-tabs" role="tablist">
@@ -286,7 +344,7 @@ function Leaderboard({ onBackToApp, onOpenAuth }) {
         ) : error ? (
           <div className="lb-empty lb-error"><i className="fa-solid fa-triangle-exclamation"></i> {error}</div>
         ) : rows.length === 0 ? (
-          <div className="lb-empty"><i className="fa-solid fa-ghost"></i> Nenhuma partida registrada ainda. Seja o primeiro!</div>
+          <div className="lb-empty"><i className="fa-solid fa-ghost"></i> {isCurrentWeek ? "Nenhuma partida nesta semana ainda. Seja o primeiro!" : "Nenhuma partida registrada nesta semana."}</div>
         ) : (
           <table className="lb-table">
             <thead>
@@ -408,7 +466,7 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
           <span className="lb-preview-icon"><i className="fa-solid fa-trophy"></i></span>
           <div>
             <h2 className="lb-preview-title">Ranking</h2>
-            <span className="lb-preview-tag">Top 5 Jogadores</span>
+            <span className="lb-preview-tag">Top 5 da semana • reinicia em {timeUntilWeekReset()}</span>
           </div>
         </div>
         <div className="lb-preview-header-actions">
@@ -464,7 +522,7 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
         ) : error ? (
           <div className="lb-preview-empty warning">
             <i className="fa-solid fa-circle-exclamation"></i>
-            <p>Execute o <code>fix_profiles.sql</code> no Supabase.</p>
+            <p>Execute o <code>weekly_ranking.sql</code> no Supabase.</p>
             <button className="btn btn-back" style={{ fontSize: "0.75rem", padding: "4px 10px", marginTop: "8px" }} onClick={() => setReloadKey((k) => k + 1)}>
               Tentar novamente
             </button>
@@ -473,7 +531,7 @@ function LeaderboardPreview({ open, onClose, onOpenFullLeaderboard, onOpenAuth }
           <div className="lb-preview-empty">
             <i className="fa-solid fa-trophy" style={{ fontSize: "2rem", color: "#ffcc00", opacity: 0.6 }}></i>
             <p style={{ fontWeight: 700, color: "var(--text-color)" }}>Pódio Vazio</p>
-            <span className="lb-preview-hint">Jogue uma partida e conquiste o 1º lugar!</span>
+            <span className="lb-preview-hint">Novo ranking da semana — conquiste o 1º lugar!</span>
           </div>
         ) : (
           <>

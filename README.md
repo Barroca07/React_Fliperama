@@ -46,6 +46,7 @@ React_Fliperama/
 │   └── tetris.css           # Estilos do Tetris
 └── supabase/                # Scripts SQL para configuração do banco de dados
     ├── schema.sql           # Criação completa das tabelas, RLS, triggers e views
+    ├── weekly_ranking.sql   # Views do ranking semanal com histórico
     ├── fix_profiles.sql     # Sincronização de perfis e coluna de senha
     ├── add_geometrydash.sql # Atualização da constraint para incluir o Geometry Dash
     └── add_tetris.sql       # Atualização da constraint para incluir o Tetris
